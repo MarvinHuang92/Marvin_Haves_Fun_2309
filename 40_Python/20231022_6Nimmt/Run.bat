@@ -1,0 +1,1 @@
+python 6nimmt.py > log.txt
