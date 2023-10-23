@@ -2,15 +2,17 @@
 
 import os
 import random
-import neat
-# import visualize  # 用于出图
+import neat  # 当前版本 0.92
+from neat_0_6 import visualize  # 用于出图，依赖 neat-python 0.6 版本，更高版本中被删除了
 
 # NEAT 算法参考：
 # https://developer.aliyun.com/article/395142
 # https://blog.csdn.net/weixin_48577398/article/details/118315566
 
 # 依赖库：
+# python -m pip install graphviz -i https://mirrors.aliyun.com/pypi/simple/  # 不用安装，不然反而会报错
 # python -m pip install neat-python -i https://mirrors.aliyun.com/pypi/simple/
+# neat 0.6 需要手动添加，pip 安装会和高版本冲突
 
 def network(game_value):
     return random.uniform(-10,10)  # 随机浮点数
@@ -72,12 +74,13 @@ def run(config_file):
     node_names = {-1: 'A', -2: 'B', 0: 'A XOR B'}
 
 
-    # # 绘制net
+    # 绘制net
     # visualize.draw_net(config, winner, view=True, node_names=node_names)
-    # # 绘制最优和平均适应度,ylog表示y轴使用symlog（symmetric log）刻度
-    # visualize.plot_stats(stats, ylog=False, view=True)
-    # # 可视化种群变化
-    # visualize.plot_species(stats, view=True)
+    visualize.draw_net(winner, view=True, node_names=node_names)
+    # 绘制最优和平均适应度,ylog表示y轴使用symlog（symmetric log）刻度
+    visualize.plot_stats(stats, ylog=False, view=True)
+    # 可视化种群变化
+    visualize.plot_species(stats, view=True)
  
     # 使用restore_checkpoint方法使得种群p恢复到的checkpoint-4时的状态，返回population
     p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
