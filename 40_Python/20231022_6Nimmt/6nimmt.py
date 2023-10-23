@@ -26,18 +26,37 @@ class Player():
             bullheads += card.bullheads
         print("%s's PenaltyCards: (%s), Bullheads: %d" % (self.name, cardlist.strip(", "), bullheads))
     
-    def playCard(self, table):
-        card = self.chooseCardToPlay(table)
+    def playCard(self, table, human=False):
+        if human:
+            card = self.HumanChooseCardToPlay(table)
+        else:
+            card = self.AiChooseCardToPlay(table)
         self.handCards.pop(self.handCards.index(card))
         print("%s plays %s." % (self.name, card.name))
         table.stash.append({"player":self, "card":card})
 
-    # 玩家思考该出哪张牌
-    def chooseCardToPlay(self, table):
+    # 电脑思考该出哪张牌
+    def AiChooseCardToPlay(self, table):
         return self.handCards[0]
 
-    # 玩家思考当打出最小牌时，选择收哪一行
-    def chooseWhenSmallest(self, table):
+    # 人类出牌
+    def HumanChooseCardToPlay(self, table):
+        # 当仅剩一张牌时，不必询问
+        if len(self.handCards) == 1:
+            return self.handCards[0]
+        # 手牌多于一张，提示玩家选牌
+        else:
+            self.showHandCards()
+            a = 0
+            while True:
+                for card in self.handCards:
+                    if str(card.value) == a:
+                        return card
+                a = input("%s: Please choose a card to play..." % self.name)
+        
+
+    # 电脑思考当打出最小牌时，选择收哪一行
+    def AiChooseWhenSmallest(self, table):
 
         # return random.randint(1,4)
 
@@ -50,6 +69,10 @@ class Player():
             bullheads_list.append(bullheads)
         # print(bullheads_list)
         return(bullheads_list.index(min(bullheads_list)) + 1)
+    
+    # 人类：当打出最小牌时，选择收哪一行
+    def HumanChooseWhenSmallest(self, table):
+        pass
 
 
 # 定义“牌”类
@@ -104,7 +127,7 @@ class Table():
                 diffs.append(item["card"].value-last_card_value)
             # 如果是场上最小的牌，玩家自行选择清除一行
             if max(diffs) < 0:
-                target_row = item["player"].chooseWhenSmallest(table)
+                target_row = item["player"].AiChooseWhenSmallest(table)
                 print(item["player"].name, item["card"].name, "is the smallest card! cleaned row %d as %s's Penalty." % (target_row, item["player"].name))
                 # 传入的参数为 1-4 行，转换为脚标 0-3
                 row = target_row - 1
@@ -163,9 +186,11 @@ def showLeftCards(leftCards):
 if __name__ == "__main__":
 
     # 玩家数量 (2-10)
-    PLAYERS = 10
+    PLAYERS = 4
     # 每人手牌数，默认10
     HANDCARDS = 10
+    # 人类玩家数量
+    HUMAN_PLAYERS = 1
 
     print("\n=================== Init Game =========================")
 
@@ -183,18 +208,20 @@ if __name__ == "__main__":
     # for card in leftCards:
     #     card.showInfo()
 
-    # 创建10名玩家对象
-    for i in range(1,11):
+    # 创建所有玩家对象
+    for i in range(1, PLAYERS+1):
         exec("P%d = Player('P%d')" %(i, i))
 
     # 洗牌
     random.shuffle(leftCards)
 
-    # 发牌，PLAYERS名玩家，每人HANDCARDS张牌
+    # 发牌
     for i in range(1, PLAYERS+1):
         for j in range(HANDCARDS):
             eval("P%d.handCards.append(leftCards.pop(0))" % i)
-        # eval("P%d.sortHandCards()" % i)
+        # 人类玩家的手牌将被排序
+        if i <= HUMAN_PLAYERS:
+            eval("P%d.sortHandCards()" % i)
         eval("P%d.showHandCards()" % i)
 
     # 翻4张底牌
@@ -208,15 +235,26 @@ if __name__ == "__main__":
     # 游戏开始
     for i in range(HANDCARDS):
         print("\n=================== Start Game %s =======================" % str(i+1))
-        # 玩家出牌
-        for i in range(1, PLAYERS+1):
+        
+        # 显示当前桌面牌型
+        table.showTable()
+
+        # 人类玩家出牌
+        for i in range(1, HUMAN_PLAYERS+1):
+            eval("P%d.playCard(table, human=True)" % i)
+        # 电脑玩家出牌
+        for i in range(HUMAN_PLAYERS+1, PLAYERS+1):
             eval("P%d.playCard(table)" % i)
 
         # 比较大小，并按顺序放置牌
         table.arrangeCard()
         table.stash = []  # 清空缓存区
-        table.showTable()
         
         for i in range(1, PLAYERS+1):
             eval("P%d.showPenaltyCards()" % i)
 
+    # 游戏结束，显示桌面和分数
+    print("\n=================== Game End =======================")
+    table.showTable()
+    for i in range(1, PLAYERS+1):
+        eval("P%d.showPenaltyCards()" % i)
