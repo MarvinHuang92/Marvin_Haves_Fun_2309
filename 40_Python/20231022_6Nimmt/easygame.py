@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import random
+import easygame_ai
 
 ###### 一个超简单小游戏 ######
 # 一个数字初始值为0或1
@@ -44,7 +45,16 @@ class Player():
 
     # 预留电脑决策方法
     def aiMakeDecision(self, game):
-        a = random.randint(0,1)
+        # 随机选择0或1
+        # a = random.randint(0,1)
+        
+        # 神经网络输出
+        a = easygame_ai.network(game.value)
+        print("%s's raw output: %.3f" % (self.name, a))
+        
+        # 将神经网络输出正则化
+        a = easygame_ai.normalize(a)
+
         print("%s chooses %d" % (self.name, a))
         return a
 
