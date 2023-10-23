@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import random
 
 # 定义玩家类
@@ -48,7 +50,6 @@ class Player():
             bullheads_list.append(bullheads)
         # print(bullheads_list)
         return(bullheads_list.index(min(bullheads_list)) + 1)
-
 
 
 # 定义“牌”类
@@ -137,8 +138,7 @@ class Table():
                         item["player"].penaltyCards.append(self.table[row][i])
                         self.table[row][i] = None
                     self.table[row][0] = item["card"]
-
-            
+     
     def showTable(self):
         print("Show Table...")
         for row in self.table:
