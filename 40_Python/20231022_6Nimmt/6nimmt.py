@@ -197,6 +197,9 @@ if __name__ == "__main__":
     # 人类玩家数量
     HUMAN_PLAYERS = 0
 
+    # 随机数种子
+    RANDOM_SEED = 1
+
     print("\n=================== Init Game =========================")
 
     # 创建游戏
@@ -216,6 +219,9 @@ if __name__ == "__main__":
     # 创建所有玩家对象
     for i in range(1, PLAYERS+1):
         exec("P%d = Player('P%d')" %(i, i))
+
+    # 固定牌局
+    random.seed(RANDOM_SEED)
 
     # 洗牌
     random.shuffle(leftCards)
