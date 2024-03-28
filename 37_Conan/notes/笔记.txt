@@ -1,0 +1,25 @@
+Run in Git-bash:
+
+export PATH=${PATH}:/c/TCC/Tools/python3/3.7.4-29_WIN64_2/Scripts/
+
+
+Conan 安装方式：
+https://docs.conan.io/2/installation.html
+最下面的 "Install from source"
+
+如果通过 git clone repo 安装路径改变，需要修改egg-link 地址
+https://blog.csdn.net/qq_31813825/article/details/119788841
+
+初次使用，"conan profile detect --force" 创建profile文件
+
+==============================================================
+
+https://zhuanlan.zhihu.com/p/613174589
+
+https://docs.conan.io/2/tutorial/creating_packages/create_your_first_package.html
+
+https://zhuanlan.zhihu.com/p/368856451
+
+https://qq742971636.blog.csdn.net/article/details/132562199
+
+
