@@ -6,12 +6,30 @@
 __author__ = 'Marvin Huang'
 
 # ver 0.4
-# 增加了每次转向都会重新确定侧向位置
+# 增加了横向对齐：每次转向都会重新确定侧向位置
 # 优化炮弹贴图
 
 # ver 0.5
 # 修改敌人出生机制
-# 待解决：解决无法对炮问题(canon_flag)、计分板（精确每种敌人的name才能区分分数）、会卡进墙里的问题
+# Todo：解决无法对炮问题(canon_flag)、计分板（精确每种敌人的name才能区分分数）、会卡进墙里的问题
+
+# ver 0.6
+# 坦克炮弹数量设定修改，允许多于一枚炮弹存在，为道具做准备
+# 更新“过热”机制，用于解决炮弹连击太快的问题
+# 更新横向对齐的最小单位 12 -> 24，不容易卡进墙里了
+# 去掉炮弹的无敌属性，允许对炮
+
+# Todo: 墙体一次只能打掉一角的问题
+
+
+"""
+Class 类别
+    世界类 World
+    对象类 GameEntity -> {Tank, Terran, Canon}
+    状态机 StateMachine
+    状态   State
+"""
+
 
 import pygame
 import time
@@ -35,13 +53,15 @@ BB_SIZE = (W - Bx, By)
 BW = BB_SIZE[0]
 BH = BB_SIZE[1]
 
-# TR地形最小单位边长（像素）
-# TK坦克和基地边长
-TR = 12
-TK = 48
+# U1 地形最小单位边长（像素）
+# U2 横向对齐的最小单位
+# U4 坦克和基地边长
+U1 = 12
+U2 = 24
+U4 = 48
 
 # 基地位置
-BASE_POSITION = (Bx/2 - TK/2, By - TK)
+BASE_POSITION = (Bx/2 - U4/2, By - U4)
 BASEx = BASE_POSITION[0]
 BASEy = BASE_POSITION[1]
 
@@ -68,52 +88,10 @@ TIME = 0.
 CANON_AMOUNT = 0
 PTS = 0
 LIVES = 2  # 玩家剩余生命
+OVERHEAT_CD = 2  # 炮管过热时长(帧)
 
 # 以下State和StateMachine两个类是不变的，只改变后续的就可以
-
-
-class State:  # 状态基类，空白（新的状态会成为它的子类）
-    def __init__(self, name):
-        self.name = name
-
-    def do_actions(self):  # 当前动作
-        pass
-
-    def check_conditions(self):  # 状态转移关系
-        pass
-
-    def entry_actions(self):  # 进入状态的动作
-        pass
-
-    def exit_actions(self):  # 退出状态的动作
-        pass
-
-
-class StateMachine:  # 状态机
-    def __init__(self):
-        self.states = {}    # 存储状态，这是一个目录dict
-        self.active_state = None    # 当前有效状态
-
-    def add_state(self, state):
-        # 增加状态
-        self.states[state.name] = state
-
-    def think(self):
-        if self.active_state is None:
-            return
-        # 所谓think包括两个部分：1执行有效状态的动作，2随时做转移状态检查
-        self.active_state.do_actions()
-        new_state_name = self.active_state.check_conditions()
-        if new_state_name is not None:
-            self.set_state(new_state_name)
-
-    def set_state(self, new_state_name):
-        # 更改状态，执行进入/退出动作
-        if self.active_state is not None:
-            self.active_state.exit_actions()  # 如果有当前动作，执行它的后摇
-        self.active_state = self.states[new_state_name]  # 然后将当前动作更改
-        self.active_state.entry_actions()  # 执行新动作的前摇
-
+from StateMachine import *
 
 class World(object):  # 世界地图
     def __init__(self):
@@ -126,7 +104,7 @@ class World(object):  # 世界地图
         # 画计分板
         pygame.draw.rect(self.background, (180, 180, 180), (Bx, 0, BB_SIZE[0], BB_SIZE[1]))
         # 画基地的【位置】，但并没有添加真正的基地上去
-        # pygame.draw.rect(self.background, (255, 255, 255), (BASEx, BASEy, TK, TK))
+        # pygame.draw.rect(self.background, (255, 255, 255), (BASEx, BASEy, U4, U4))
 
 # 以下几个方法是通用的
 
@@ -144,8 +122,8 @@ class World(object):  # 世界地图
         else:
             return None
 
-    def process(self, time_passed):  # 处理世界中的每一个实体
-        time_passed_seconds = time_passed / 1000.0 * 1.5  # 时间加速器
+    def process(self, time_passed_seconds):  # 处理世界中的每一个实体
+        time_passed_seconds = time_passed_seconds * 1.5  # 时间加速器
         self.entities2 = copy.copy(self.entities)
         # 先把dict复制一份，对后者迭代，不然会改变原dict长度，导致报错
         for entity in self.entities2.values():
@@ -199,12 +177,13 @@ class GameEntity(object):
         self.speed = 0.
         self.direction = Vec2d(0, -1)  # 默认是朝下的（敌人）
         self.hp = 1  # 所有对象默认生命值 = 1
-        self.size = TK
+        self.size = U4
         self.invincible = False  # 默认不是无敌的
         self.collision_to_tank = True  # 默认对坦克有碰撞体积
         self.collision_to_canon = True  # 默认对炮弹有碰撞体积
         self.flag = 0  # 所属阵营（0表示中立，1表示玩家，2表示敌人）
         self.brain = StateMachine()
+        self.canThink = True  # 默认True，如果对象无法思考，设为False不运行状态机，节约资源
 
     def render(self, surface):
         angle = -self.direction.get_angle() - 90
@@ -213,13 +192,39 @@ class GameEntity(object):
         w, h = rotated_image.get_size()
         surface.blit(rotated_image, (x-w/2, y-h/2))
 
-    def process(self, time_passed):
-        self.brain.think()
+    def process(self, time_passed_seconds):
+        if self.canThink:
+            self.brain.think()
         # 这里的think可以在后面的各个state里面定义内容
         # 也可以定义一些在state之外的通用动作，或者不定义，全都放在state的think里面
         # 通常，每一步都要让可以移动的东西继续移动
         if self.speed > 0:
-            self.location += time_passed * self.speed * self.direction
+            self.location += time_passed_seconds * self.speed * self.direction
+        # 防止坦克和炮弹（会移动的东西）超出边框范围
+        if self.name == "tank_user" or self.name == "tank_enemy":  # 如果是坦克，就停止移动
+            if self.location.x < 0 + U4 / 2:
+                self.location.x = 0 + U4 / 2
+            if self.location.x > BATTLEFIELD[0] - U4 / 2:
+                self.location.x = BATTLEFIELD[0] - U4 / 2
+            if self.location.y < 0 + U4 / 2:
+                self.location.y = 0 + U4 / 2
+            if self.location.y > BATTLEFIELD[1] - U4 / 2:
+                self.location.y = BATTLEFIELD[1] - U4 / 2
+        if self.name == "canon": # 如果是炮弹，就直接消失
+            if (self.location.x < 0 + U1 / 2)\
+                or (self.location.x > BATTLEFIELD[0] - U1 / 2)\
+                or (self.location.y < 0 + U1 / 2)\
+                or (self.location.y > BATTLEFIELD[1] - U1 / 2):
+                self.world.remove_entity(self)
+                self.shooter.reload_canon()  # 炮弹发射者补充炮弹
+        # 刷新所有坦克炮管冷却时间
+        if self.name == "tank_user" or self.name == "tank_enemy":
+            if self.overheat > 0:
+                self.overheat -= 1
+        # 刷新炮弹库存
+        global CANON_AMOUNT
+        if self.name == "tank_user":
+            CANON_AMOUNT = self.canon_amount
 
     def got_shot(self):  # 如果被击中，会触发此动作,但默认没有效果，对于基地等特殊对象才有效果
         pass
@@ -241,13 +246,14 @@ class Tank(GameEntity):
         self.brain.add_state(controlled_state)
         # 所有坦克默认速度48（每秒移动一个车身长度）
         self.normal_speed = 48  # 额定的速度
-        self.speed = self.normal_speed  # 实际速度（可能不等于额定速度哦）
+        self.speed = self.normal_speed  # 当前速度（可能不等于额定速度）
         # 新属性：炮弹速度、炮弹库存、转弯和开火的概率
         self.canon_speed = 120
-        self.canon_amount = 100
+        self.canon_amount_max = 1  # 可以同时存在场上的炮弹数量，上一发炮弹爆炸后会补充回来
+        self.canon_amount = self.canon_amount_max  # 剩余炮弹数量
         self.turning_prob = 40  # 实际上是它的倒数，prob表示probability
         self.fire_prob = 50
-        self.overheat = False  # 所谓过热，上一个炮弹还在飞行时，不能开炮
+        self.overheat = 0  # 所谓过热，用于防止连击太快
 
     # 定义开火动作
     def fire(self):
@@ -257,13 +263,18 @@ class Tank(GameEntity):
                 canon = Canon(self.world, canon_image)  # 建立一个实例
                 canon.brain.set_state("flying")
                 canon.shooter = self  # 记录炮弹的发射者
-                canon.location = self.location + self.direction * (TK / 2)
+                canon.location = self.location + self.direction * (U4 / 2)
                 canon.direction = self.direction
                 canon.flag = self.flag  # 阵营和发射者的阵营相同
                 canon.speed = self.canon_speed  # 速度由发射者赋予它
-                self.world.add_entity(canon)  # 向世界添加炮弹，并使发射者的炮弹库存减少1，且进入过热状态
+                self.world.add_entity(canon)  # 向世界添加炮弹，并使发射者的炮弹库存减少1
                 self.canon_amount -= 1
-                self.overheat = True
+                self.overheat = OVERHEAT_CD
+    
+    # 定义装填炮弹
+    def reload_canon(self):
+        if self.canon_amount < self.canon_amount_max:
+            self.canon_amount += 1  # 炮弹发射者补充炮弹
 
     # 定义拐弯
     def turn(self):
@@ -282,19 +293,19 @@ class Tank(GameEntity):
     def lateral_correct(self):
         # 先判断原始方向
         if self.direction in (Vec2d(-1, 0), Vec2d(1, 0)):  # 横向的
-            s1 = self.location[0] // 12  # 取商的整数部分
-            s2 = self.location[0] % 12  # 余数
-            if s2 <= 6:
-                self.location[0] = s1 * 12
+            s1 = self.location[0] // U2  # 取商的整数部分
+            s2 = self.location[0] % U2  # 余数
+            if s2 <= U1:
+                self.location[0] = s1 * U2
             else:
-                self.location[0] = s1 * 12 + 12
+                self.location[0] = s1 * U2 + U2
         else:  # 纵向的
-            s1 = self.location[1] // 12
-            s2 = self.location[1] % 12
-            if s2 <= 6:
-                self.location[1] = s1 * 12
+            s1 = self.location[1] // U2
+            s2 = self.location[1] % U2
+            if s2 <= U1:
+                self.location[1] = s1 * U2
             else:
-                self.location[1] = s1 * 12 + 12
+                self.location[1] = s1 * U2 + U2
 
 
 class TankUser(Tank):  # 玩家的坦克
@@ -302,7 +313,8 @@ class TankUser(Tank):  # 玩家的坦克
         # 首先继承父类的构造方法
         Tank.__init__(self, world, "tank_user", image) # 这里的name被固定下来，作为每一个创建的对象的标记
         # 对和父类不同的属性进行修改
-        self.canon_amount = 400
+        # self.canon_amount = 2
+        # self.canon_amount_max = 2
         self.canon_speed = 240
         self.flag = 1
         self.hp = LIVES + 1
@@ -352,7 +364,6 @@ class TankEnemy4(Tank):  # 第四类敌人，4重装甲，受伤有加成，有�
         if self.hp > 1:
             self.normal_speed += 36
             self.canon_speed += 48
-            self.canon_amount += 5
 
     # 具有生命槽，长32，宽4，与坦克本身有10的空隙
     def render(self, surface):
@@ -367,10 +378,10 @@ class TankEnemy4(Tank):  # 第四类敌人，4重装甲，受伤有加成，有�
 
 class Terran(GameEntity):  # 地形对象，不可以动，中立阵营
     def __init__(self, world, name, image):  # 这不是最低级class，所以不能定义确定的name，等待传入
-        self.name = name
         GameEntity.__init__(self, world, name, image)
         self.flag = 0  # 虽然默认也是0，但还是保险一些啦
-
+        self.canThink = False  # 不运行状态机，节约资源
+        
 
 class Base(Terran):  # 基地
     def __init__(self, world, image):  # 最低一级的class在__init__中定义name属性
@@ -383,16 +394,17 @@ class Base(Terran):  # 基地
         GAMEOVER = True
 
 
-class Wall(Terran):  # 墙，尺寸24
+class Wall(Terran):  # 墙
     def __init__(self, world, image):
         Terran.__init__(self, world, "wall", image)
-        self.size = 2 * TR
+        self.size = U2  # 尺寸24
+        # self.size = U1  # 尺寸12
 
 
 class Iron(Terran):  # 铁皮，无敌的，尺寸24
     def __init__(self, world, image):
         Terran.__init__(self, world, "iron", image)
-        self.size = 2 * TR
+        self.size = 2 * U1
         self.invincible = True
 
 
@@ -428,9 +440,7 @@ class Canon(GameEntity):  # 炮弹类
         # 创建各种状态
         flying_state = CanonStateFlying(self)
         self.brain.add_state(flying_state)
-        self.size = TR
-        self.invincible = True  # 无敌的，不会被摧毁
-        self.collision_to_canon = False  # 不会撞上其他的炮弹
+        self.size = U1
         self.shooter = None  # 炮弹的发射者
 
 
@@ -442,11 +452,11 @@ class CanonStateFlying(State):  # 炮弹的飞行状态，只有中途动作，�
         self.canon = canon
 
     def do_actions(self):  # 唯一的动作，撞上什么东西然后爆炸
-        goal = self.canon.world.collision("canon", self.canon.location, self.canon.direction, TR, self.canon.id)
+        goal = self.canon.world.collision("canon", self.canon.location, self.canon.direction, U1, self.canon.id)
         if goal is not None:
             self.canon.world.remove_entity(self.canon)
-            self.canon.shooter.overheat = False  # 炮弹发射者解除过热状态
-            if self.canon.flag != goal.flag and not goal.invincible:
+            self.canon.shooter.reload_canon()  # 炮弹发射者补充炮弹
+            if (self.canon.flag != goal.flag) and not goal.invincible:
                 goal.hp -= 1
                 goal.got_shot()
                 if goal.hp <= 0:
@@ -470,7 +480,7 @@ class TankStateGoing(State):  # 包括完整的中途动作、转移条件、进
             self.tank.turn()
 
     def check_conditions(self):  # 撞到什么东西，进入stopping状态
-        goal = self.tank.world.collision("tank_enemy", self.tank.location, self.tank.direction, TK, self.tank.id)
+        goal = self.tank.world.collision("tank_enemy", self.tank.location, self.tank.direction, U4, self.tank.id)
         if goal is not None:
             if goal.name == "bonus":
                 self.tank.world.remove_entity(goal)  # 如果撞到的东西是bonus，就去掉它，并给自己加速（假设所有的bonus都是加速器）
@@ -495,7 +505,7 @@ class TankStateStopping(State):
             self.tank.turn()
 
     def check_conditions(self):
-        goal = self.tank.world.collision("tank_enemy", self.tank.location, self.tank.direction, TK, self.tank.id)
+        goal = self.tank.world.collision("tank_enemy", self.tank.location, self.tank.direction, U4, self.tank.id)
         if goal is None:
             return "going"
         return None
@@ -510,62 +520,47 @@ class TankStateControlled(State):
         self.tank = tank
 
     def do_actions(self):
-        goal = self.tank.world.collision("tank_user", self.tank.location, self.tank.direction, TK, self.tank.id)
+        goal = self.tank.world.collision("tank_user", self.tank.location, self.tank.direction, U4, self.tank.id)
         # 控制方向，and遇到阻挡会停下来
         pressed_keys = pygame.key.get_pressed()
         if pressed_keys[K_LEFT]:
             if self.tank.direction not in (Vec2d(-1, 0), Vec2d(1, 0)):
                 self.tank.lateral_correct()
             self.tank.direction = Vec2d(-1, 0)
-            if goal is None:
-                self.tank.speed = self.tank.normal_speed
-            elif goal.name == "bonus":
-                self.tank.world.remove_entity(goal)  # 如果撞到的东西是bonus，就去掉它，并给自己加速（假设所有的bonus都是加速器）
-                self.tank.normal_speed += 48
-                self.tank.canon_amount += 15
-            else:
-                self.tank.speed = 0  # 如果撞到别的东西，就停下来
+            self.collision_with_goal(goal)
         elif pressed_keys[K_RIGHT]:
             if self.tank.direction not in (Vec2d(-1, 0), Vec2d(1, 0)):
                 self.tank.lateral_correct()
             self.tank.direction = Vec2d(1, 0)
-            if goal is None:
-                self.tank.speed = self.tank.normal_speed
-            elif goal.name == "bonus":
-                self.tank.world.remove_entity(goal)
-                self.tank.normal_speed += 48
-                self.tank.canon_amount += 15
-            else:
-                self.tank.speed = 0
+            self.collision_with_goal(goal)
         elif pressed_keys[K_UP]:
             if self.tank.direction not in (Vec2d(0, -1), Vec2d(0, 1)):
                 self.tank.lateral_correct()
             self.tank.direction = Vec2d(0, -1)
-            if goal is None:
-                self.tank.speed = self.tank.normal_speed
-            elif goal.name == "bonus":
-                self.tank.world.remove_entity(goal)
-                self.tank.normal_speed += 48
-                self.tank.canon_amount += 15
-            else:
-                self.tank.speed = 0
+            self.collision_with_goal(goal)
         elif pressed_keys[K_DOWN]:
             if self.tank.direction not in (Vec2d(0, -1), Vec2d(0, 1)):
                 self.tank.lateral_correct()
             self.tank.direction = Vec2d(0, 1)
-            if goal is None:
-                self.tank.speed = self.tank.normal_speed
-            elif goal.name == "bonus":
-                self.tank.world.remove_entity(goal)
-                self.tank.normal_speed += 48
-                self.tank.canon_amount += 15
-            else:
-                self.tank.speed = 0
+            self.collision_with_goal(goal)
+        # 不按方向键时，停止
         else:
             self.tank.speed = 0
         # 控制开火
         if pressed_keys[K_SPACE]:
             self.tank.fire()
+
+    # 处理与目标的碰撞
+    def collision_with_goal(self, goal):
+        if goal is None:
+            self.tank.speed = self.tank.normal_speed
+        elif goal.name == "bonus":
+            self.tank.world.remove_entity(goal)  # 如果撞到的东西是bonus，就去掉它，并给自己加速（假设所有的bonus都是加速器）
+            self.tank.normal_speed += 48
+            self.tank.canon_amount += 1
+            self.tank.canon_amount_max += 1
+        else:
+            self.tank.speed = 0  # 如果撞到别的东西，就停下来
 
 
 # 游戏主进程
@@ -573,12 +568,13 @@ class TankStateControlled(State):
 def run():
     pygame.init()
     screen = pygame.display.set_mode(SCREEN_SIZE, 0, 32)
-    pygame.display.set_caption('Tank Battle v0.3')  # pygame下的窗口标题，和python主体的设置方法不一样
+    pygame.display.set_caption('Tank Battle v0.6')  # pygame下的窗口标题，和python主体的设置方法不一样
     world = World()  # 这里定义的小写world变量名是一个实例，用来在后面传递给其他类。当然，World类只有这一个实例
     w, h = BATTLEFIELD
     clock = pygame.time.Clock()
     tank_user_image = pygame.image.load("tank_user.png").convert_alpha()
     wall_image = pygame.image.load("wall.jpg").convert()
+    wall_small_image = pygame.image.load("wall_small.jpg").convert()
     iron_image = pygame.image.load("iron.jpg").convert()
     forrest_image = pygame.image.load("forrest.png").convert_alpha()
     river_image = pygame.image.load("river.jpg").convert()
@@ -596,6 +592,7 @@ def run():
     tank_user.location = Vec2d(9 * 24, 25 * 24)
     tank_user.brain.set_state("controlled")
     world.add_entity(tank_user)
+    # 设置CANON_AMOUNT的初始值
     global CANON_AMOUNT
     CANON_AMOUNT = tank_user.canon_amount
 
@@ -644,10 +641,22 @@ def run():
             v = y * 24 - 12
             z = (u, v)
             wall_location.append(z)
+    # 大块的墙体
     for pos in wall_location:
         wall = Wall(world, wall_image)
         wall.location = Vec2d(*pos)
         world.add_entity(wall)
+    # 小块的墙体：将每个pos分割成4个小的墙体
+    # for pos in wall_location:
+    #     small_wall_location = []
+    #     small_wall_location.append((pos[0]-6, pos[1]-6))
+    #     small_wall_location.append((pos[0]-6, pos[1]+6))
+    #     small_wall_location.append((pos[0]+6, pos[1]-6))
+    #     small_wall_location.append((pos[0]+6, pos[1]+6))
+    #     for small_pos in small_wall_location:
+    #         wall = Wall(world, wall_small_image)
+    #         wall.location = Vec2d(*small_pos)
+    #         world.add_entity(wall)
 
     iron_location = []
     for x in (1, 2, 25, 26):
@@ -666,9 +675,10 @@ def run():
         world.add_entity(iron)
 
     base = Base(world, base_image)
-    base.location = (BASEx + TK / 2, BASEy + TK / 2)
+    base.location = (BASEx + U4 / 2, BASEy + U4 / 2)
     world.add_entity(base)
  
+    # 开始循环
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -678,56 +688,40 @@ def run():
                     exit()
                     # 让ESC也可以退出程序
 
-        time_passed = clock.tick(30)
+        time_passed = clock.tick(30)  # 毫秒
         # 可以改变帧率
 
-        seconds = time_passed / 1000.
+        time_passed_seconds = time_passed / 1000.  # 转成秒(浮点数)
         global TIME
-        TIME += seconds
+        TIME += time_passed_seconds
         # 记录时间
 
-        # 添加敌人坦克
+        # 当场上敌人少于6个时，添加敌人坦克
         global ENEMY_ALIVE, ENEMY_QUEUE, NEXT_PLACE
         if ENEMY_ALIVE < 6 and ENEMY_QUEUE > 0:
+            # 敌人出生地点
             place_x = 288 * NEXT_PLACE + 24
             place_y = 24
             NEXT_PLACE += 1
             if NEXT_PLACE > 2:
                 NEXT_PLACE = 0
+            # 建立实例
             if ENEMY_ORDER[0] == 1:
-                tank_enemy = TankEnemy1(world, tank_enemy1_image)  # 建立实例
-                tank_enemy.location = Vec2d(place_x, place_y)  # 放置位置
-                tank_enemy.brain.set_state("going")  # 默认状态
-                world.add_entity(tank_enemy)  # 添加进地图
-                ENEMY_QUEUE -= 1
-                ENEMY_ALIVE += 1
-                ENEMY_ORDER.pop(0)
-                # print(ENEMY_ORDER)
-                # print("QUEUE = "+ str(ENEMY_QUEUE))
+                tank_enemy = TankEnemy1(world, tank_enemy1_image)
             elif ENEMY_ORDER[0] == 2:
-                tank_enemy = TankEnemy2(world, tank_enemy2_image)  # 建立实例
-                tank_enemy.location = Vec2d(place_x, place_y)  # 放置位置
-                tank_enemy.brain.set_state("going")  # 默认状态
-                world.add_entity(tank_enemy)  # 添加进地图
-                ENEMY_QUEUE -= 1
-                ENEMY_ALIVE += 1
-                ENEMY_ORDER.pop(0)
+                tank_enemy = TankEnemy2(world, tank_enemy2_image)
             elif ENEMY_ORDER[0] == 3:
-                tank_enemy = TankEnemy3(world, tank_enemy3_image)  # 建立实例
-                tank_enemy.location = Vec2d(place_x, place_y)  # 放置位置
-                tank_enemy.brain.set_state("going")  # 默认状态
-                world.add_entity(tank_enemy)  # 添加进地图
-                ENEMY_QUEUE -= 1
-                ENEMY_ALIVE += 1
-                ENEMY_ORDER.pop(0)
+                tank_enemy = TankEnemy3(world, tank_enemy3_image)
             elif ENEMY_ORDER[0] == 4:
-                tank_enemy = TankEnemy4(world, tank_enemy4_image)  # 建立实例
-                tank_enemy.location = Vec2d(place_x, place_y)  # 放置位置
-                tank_enemy.brain.set_state("going")  # 默认状态
-                world.add_entity(tank_enemy)  # 添加进地图
-                ENEMY_QUEUE -= 1
-                ENEMY_ALIVE += 1
-                ENEMY_ORDER.pop(0)
+                tank_enemy = TankEnemy4(world, tank_enemy4_image)
+            tank_enemy.location = Vec2d(place_x, place_y)  # 放置位置
+            tank_enemy.brain.set_state("going")  # 默认状态
+            world.add_entity(tank_enemy)  # 添加进地图
+            ENEMY_QUEUE -= 1
+            ENEMY_ALIVE += 1
+            ENEMY_ORDER.pop(0)
+            # print(ENEMY_ORDER)
+            # print("QUEUE = "+ str(ENEMY_QUEUE))
 
         # 随机时间和地点出现奖励
         if randint(1, bonus_prob) == 1:
@@ -735,39 +729,8 @@ def run():
             bonus.location = Vec2d(randint(0, w), randint(0, h))
             world.add_entity(bonus)
 
-        # 防止坦克和炮弹（会移动的东西）超出边框范围
-        world.entities2 = copy.copy(world.entities)
-        for entity in world.entities2.values():
-            if entity.name == "tank_user" or entity.name == "tank_enemy":  # 如果是坦克，就停止移动
-                if entity.location.x < 0 + TK / 2:
-                    entity.location.x = 0 + TK / 2
-                if entity.location.x > BATTLEFIELD[0] - TK / 2:
-                    entity.location.x = BATTLEFIELD[0] - TK / 2
-                if entity.location.y < 0 + TK / 2:
-                    entity.location.y = 0 + TK / 2
-                if entity.location.y > BATTLEFIELD[1] - TK / 2:
-                    entity.location.y = BATTLEFIELD[1] - TK / 2
-            if entity.name == "canon": # 如果是炮弹，就直接消失
-                if entity.location.x < 0 + TR / 2:
-                    world.remove_entity(entity)
-                    entity.shooter.overheat = False  # 炮弹发射者解除过热状态
-                if entity.location.x > BATTLEFIELD[0] - TR / 2:
-                    world.remove_entity(entity)
-                    entity.shooter.overheat = False  # 炮弹发射者解除过热状态
-                if entity.location.y < 0 + TR / 2:
-                    world.remove_entity(entity)
-                    entity.shooter.overheat = False  # 炮弹发射者解除过热状态
-                if entity.location.y > BATTLEFIELD[1] - TR / 2:
-                    world.remove_entity(entity)
-                    entity.shooter.overheat = False  # 炮弹发射者解除过热状态
-
-        # 随时刷新炮弹库存
-        world.entities2 = copy.copy(world.entities)
-        for entity in world.entities2.values():
-            if entity.name == "tank_user":
-                CANON_AMOUNT = entity.canon_amount  # 这里又不用声明全局变量了，在run()里只要声明一次就可以了
-
-        world.process(time_passed)
+        # 处理世界中每一个entity
+        world.process(time_passed_seconds)
         world.render(screen)
 
         # 显示计分板信息
@@ -781,15 +744,16 @@ def run():
         text_surface6 = font.render('Player Tanks: %d' % LIVES, True, (255, 255, 255))  # 显示剩余生命
         screen.blit(text_surface1, (BATTLEFIELD[0] + 15, 5))
         screen.blit(text_surface2, (BATTLEFIELD[0] + 15, 35))
+        screen.blit(text_surface5, (BATTLEFIELD[0] + 15, 65))
         if not GAMEOVER:
-            screen.blit(text_surface6, (BATTLEFIELD[0] + 15, 65))
+            screen.blit(text_surface6, (BATTLEFIELD[0] + 15, 125))
         if ENEMY_NUMBER == 0:
-            screen.blit(text_surface3, (BATTLEFIELD[0] + 65, 125))
+            screen.blit(text_surface3, (BATTLEFIELD[0] + 65, 185))
             pressed_keys = pygame.key.get_pressed()
             if pressed_keys[K_SPACE]:
                 exit()
         if GAMEOVER:
-            screen.blit(text_surface4, (BATTLEFIELD[0] + 35, 125))
+            screen.blit(text_surface4, (BATTLEFIELD[0] + 35, 185))
             pressed_keys = pygame.key.get_pressed()
             if pressed_keys[K_SPACE]:
                 exit()
