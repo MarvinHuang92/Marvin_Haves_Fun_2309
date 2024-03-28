@@ -2,6 +2,8 @@ Run in Git-bash:
 
 export PATH=${PATH}:/c/TCC/Tools/python3/3.7.4-29_WIN64_2/Scripts/
 
+建议直接添加到 控制面板 PATH 设置中
+==============================================================
 
 Conan 安装方式：
 https://docs.conan.io/2/installation.html
@@ -22,4 +24,8 @@ https://zhuanlan.zhihu.com/p/368856451
 
 https://qq742971636.blog.csdn.net/article/details/132562199
 
+==============================================================
 
+当前问题：mingw 32有编译问题
+需要安装mingw-w64，下载很慢，放弃
+尝试通过cmakelist规定用32位编译器？
