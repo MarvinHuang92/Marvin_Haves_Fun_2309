@@ -133,7 +133,7 @@ class Game():
             # 如果是场上最小的牌，玩家自行选择清除一行
             if max(diffs) < 0:
                 target_row = item["player"].AiChooseWhenSmallest(self)
-                print(item["player"].name, item["card"].name, "is the smallest card! cleaned row %d as %s's Penalty." % (target_row, item["player"].name))
+                print(item["player"].name + " plays " + item["card"].name + ", it is the smallest card! cleaned row %d as %s's Penalty." % (target_row, item["player"].name))
                 # 传入的参数为 1-4 行，转换为脚标 0-3
                 row = target_row - 1
                 for i in range(5):
@@ -191,7 +191,7 @@ def showLeftCards(leftCards):
 if __name__ == "__main__":
 
     # 玩家数量 (2-10)
-    PLAYERS = 4
+    PLAYERS = 6
     # 每人手牌数，默认10
     HANDCARDS = 10
     # 人类玩家数量
