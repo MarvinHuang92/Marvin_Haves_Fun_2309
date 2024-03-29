@@ -32,14 +32,22 @@ class Player():
             #         break
             
             # “超人” 自动陪练
-            game.value += self.supermanMakeDecision(game)
+            game.value += self.supermanMakeDecision(game, strength=0.5)
         else:
             game.value += self.aiMakeDecision(game)
+            # 如果对手也是“超人”
+            # game.value += self.supermanMakeDecision(game, strength=1.0, negative=True)
 
-    def supermanMakeDecision(self, game):
+    def supermanMakeDecision(self, game, strength=1.0, negative=False):
         a = 0
         if game.value % 2 == 0:
             a = 1
+        # 有失误的概率，取决于strength 0 ~ 1
+        if random.random() > strength:
+            a = 1 - a
+        # 如果作为对手，输出相反的结果
+        if negative:
+            a = 1 - a
         print("%s chooses %d" % (self.name, a))
         return a
 
