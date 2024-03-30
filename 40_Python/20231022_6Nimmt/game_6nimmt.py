@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import random
+import random, sys
+
 
 # 定义玩家类
 class Player():
@@ -8,6 +9,7 @@ class Player():
         self.name = name
         self.handCards = []
         self.penaltyCards = []
+        self.bullheads = 0
     
     def sortHandCards(self):
         self.handCards.sort()  # 需要对象支持用 < 操作比较大小
@@ -25,6 +27,7 @@ class Player():
             cardlist += (str(card.value) + ", ")
             bullheads += card.bullheads
         print("%s's PenaltyCards: (%s), Bullheads: %d" % (self.name, cardlist.strip(", "), bullheads))
+        self.bullheads = bullheads  # 将牛头数记录在玩家属性中
     
     def playCard(self, game, human=False):
         if human:
@@ -37,7 +40,7 @@ class Player():
 
     # 电脑思考该出哪张牌
     def AiChooseCardToPlay(self, game):
-        return self.handCards[0]
+        return self.handCards[0]  # 直接出第一张牌
 
     # 人类出牌
     def HumanChooseCardToPlay(self, game):
@@ -58,8 +61,9 @@ class Player():
     # 电脑思考当打出最小牌时，选择收哪一行
     def AiChooseWhenSmallest(self, game):
 
-        # return random.randint(1,4)
+        return random.randint(1,4)  # 随机收一行
 
+        # 计算每一行牛头数，收牛头最少的，如果并列，收靠前的行
         bullheads_list = []
         for row in range(4):
             bullheads = 0
@@ -186,19 +190,17 @@ def showLeftCards(leftCards):
         cardlist += (str(card.value) + ", ")
     print("leftCards: (%s)" % cardlist.strip(", "))
 
-
-
-if __name__ == "__main__":
+def run_game(random_seed='-1'):
 
     # 玩家数量 (2-10)
-    PLAYERS = 6
+    PLAYERS = 4
     # 每人手牌数，默认10
     HANDCARDS = 10
     # 人类玩家数量
     HUMAN_PLAYERS = 0
 
-    # 随机数种子
-    RANDOM_SEED = 1
+    # 强制随机数种子
+    # random_seed = 1
 
     print("\n=================== Init Game =========================")
 
@@ -221,7 +223,9 @@ if __name__ == "__main__":
         exec("P%d = Player('P%d')" %(i, i))
 
     # 固定牌局
-    random.seed(RANDOM_SEED)
+    if random_seed != -1:
+        # print(random_seed)
+        random.seed(random_seed)
 
     # 洗牌
     random.shuffle(leftCards)
@@ -245,7 +249,7 @@ if __name__ == "__main__":
 
     # 游戏开始
     for i in range(HANDCARDS):
-        print("\n=================== Start Game %s =======================" % str(i+1))
+        print("\n=============== Start Round %s ===================" % str(i+1))
         
         # 显示当前桌面牌型
         game.showTable()
@@ -269,3 +273,24 @@ if __name__ == "__main__":
     game.showTable()
     for i in range(1, PLAYERS+1):
         eval("P%d.showPenaltyCards()" % i)
+        
+    # 额外打印游戏结果summary
+    game_result_filename = "game_result.txt"
+    if random_seed != -1:
+        game_result_filename = "game_result_%d.txt" % random_seed
+    bullhead_list = []
+    with open(game_result_filename, "w") as f:
+        for i in range(1, PLAYERS+1):
+            eval("bullhead_list.append(P%d.bullheads)" % i)
+            f.write("P%d's Bullheads: %d\n" % (i, bullhead_list[i-1]))
+        winner = bullhead_list.index(min(bullhead_list))
+        f.write("P%s wins." % str(winner + 1))
+        f.close()
+
+if __name__ == "__main__":
+
+    random_seed = -1
+    if len(sys.argv) > 1:
+        random_seed = int(sys.argv[1])
+    
+    run_game(random_seed)
