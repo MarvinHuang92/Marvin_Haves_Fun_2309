@@ -2,6 +2,7 @@ import torch
 from torch import nn
 import matplotlib.pyplot as plt
 # import numpy as np
+import random
 
 # 该脚本基于 202308_Neural_Network/color_classificaion.py 修改
 # 二分类问题，输出离散值 [0,1] 二选一
@@ -43,8 +44,15 @@ if __name__ == "__main__":
     # print(y)
             
     # 换成简单的函数
-    x = [0,1,2,3,4,5,6,7,8,9]
-    y = [0,1,0,1,0,1,0,1,0,1]
+    x = []
+    y = []
+    for i in range(1,100):
+        x.append(i)
+        y.append(0.95+0.1*random.random())
+    for i in range(201,300):
+        x.append(i)
+        y.append(-0.05+0.1*random.random())
+    
 
     x_reshaped = []
     y_reshaped = []
@@ -76,8 +84,8 @@ if __name__ == "__main__":
     n_features = 1         # 特征数（输入神经元数量，对应样本的 xy 坐标）
     n_hidden = 10            # 隐藏神经元数量
     n_classes = 2           # 类别数（输出神经元数量，对应各个分类的概率）
-    n_epochs = 5001         # 迭代次数
-    learning_rate = 0.1     # 学习速率
+    n_epochs = 10001         # 迭代次数
+    learning_rate = 0.01     # 学习速率
     n_print_loss = 500      # 每迭代n次，打印当前损失
 
     # 创建神经网络实例
@@ -95,7 +103,7 @@ if __name__ == "__main__":
     # h 为模型预测结果，y 为数据样本结果
     h = []
     output = model(x)  # 使用传入的 model 预测结果
-    print(output)
+    # print(output)
     for h_i in output:
         # 选择概率最大的类别, torch.max(Tensor, dim) 其中 dim = -1（返回tensor的最小单位（行）的最大值索引）
         _, predicted = torch.max(h_i, -1)
