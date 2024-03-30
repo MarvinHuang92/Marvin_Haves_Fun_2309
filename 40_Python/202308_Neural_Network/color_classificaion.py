@@ -25,20 +25,7 @@ def make_data(num):
 
 
 # 定义神经网络类
-class Network(nn.Module):
-    # 重载初始化函数（构造函数）
-    # 传入参数：输入层，隐藏层，输出层
-    def __init__(self, n_in, n_hidden, n_out):
-        super().__init__()  # 首先调用父类的初始化函数
-        # 然后新增步骤，创建两个线性层
-        self.layer1 = nn.Linear(n_in, n_hidden)
-        self.layer2 = nn.Linear(n_hidden, n_out)
-
-    # 定义前向传播
-    def forward(self, x):
-        x = self.layer1(x)  # 计算 layer1 结果
-        x = torch.relu(x)  # 进行 relu 激活
-        return self.layer2(x)  # 返回 layer2 结果
+from template_neural_network import Network, softmax_epoch
 
 # 绘制决策边界的函数
 def draw_decision_boundary(minx1, maxx1, minx2, maxx2, resolution, model):
@@ -80,6 +67,7 @@ if __name__ == "__main__":
     n_classes = 3           # 类别数（输出神经元数量，对应三种颜色的概率）
     n_epochs = 5001         # 迭代次数
     learning_rate = 0.1     # 学习速率
+    n_print_loss = 500      # 每迭代n次，打印当前损失
 
     # 将样本从 numpy 数组，转换为张量形式
     red = torch.FloatTensor(red)
@@ -87,36 +75,39 @@ if __name__ == "__main__":
     blue = torch.FloatTensor(blue)
     # 组合成为训练数据 data
     data = torch.cat((red, green, blue), dim=0)
+    
+    # print(data)
+    # data的格式：(两层括号[[]])
+    # tensor[
+    #     [红点的xy坐标]*N,
+    #     [绿点的xy坐标]*N,
+    #     [蓝点的xy坐标]*N,
+    # ]
+
 
     # 设置 label 保存三种样本标签，使用数值 012 分别对应三种颜色
     label = torch.LongTensor([0] * len(red) + [1] * len(green) + [2] * len(blue))
+    
+    # print(label)
+    # label的格式：(一层括号[])
+    # [
+    #     0*N,
+    #     1*N,
+    #     2*N,
+    # ]
 
     # 创建神经网络实例
-    model = Network(n_features, n_hidden, n_classes)
+    model = Network(n_features, n_hidden, n_classes, torch.relu)  # relu激活函数
     # 定义损失计算规则
     criterion = nn.CrossEntropyLoss()  # 交叉熵损失函数
     # Adam 优化器
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    # 进入 softmax 回归模型的循环迭代
-    for epoch in range(n_epochs):
-        # 使用当前模型对输入数据 data 进行预测，并输出 output
-        # output = model.forward(data) 
-        output = model(data)  # 这里直接调用了 Network 的 forward 方法，为什么？实测两种写法效果一样
-
-        # 计算预测值 output 与真实值 label 之间的损失 loss
-        loss = criterion(output, label)
-        loss.backward()  # 通过自动微分计算损失函数关于模型参数的梯度
-        optimizer.step()  # 更新模型参数，使得损失函数减小
-        optimizer.zero_grad()  # 将梯度清零，用于下一次迭代
-
-        # 模型的每一次迭代，都由前向传播，和反向传播组成
-        if epoch % 500 == 0:
-            # 每迭代 500 次，打印当前损失
-            print("%d iterations: loss = %.4lf" % (epoch, loss.item()))
-            print(data[0], output[0], label[0])                                     # a red sample point
-            print(data[SAMPLE_NUM], output[SAMPLE_NUM], label[SAMPLE_NUM])          # a green sample point
-            print(data[SAMPLE_NUM*2], output[SAMPLE_NUM*2], label[SAMPLE_NUM*2])    # a blue sample point
+    # 训练模型 - softmax 回归模型的循环迭代
+    model= softmax_epoch(data, label, model, criterion, optimizer, n_epochs, n_print_loss)
+        # print(data[0], output[0], label[0])                                     # one of red sample points
+        # print(data[SAMPLE_NUM], output[SAMPLE_NUM], label[SAMPLE_NUM])          # one of green sample points
+        # print(data[SAMPLE_NUM*2], output[SAMPLE_NUM*2], label[SAMPLE_NUM*2])    # one of blue sample points
 
     # 绘制决策边界，网格点的 xy 边界应大于数据点的 xy 边界
     xx1, xx2, z = draw_decision_boundary(-3, 3, -3, 3, 0.03, model)
