@@ -97,7 +97,7 @@ class Game():
             P1_choice = self.increment
         elif self.current_player == 2:
             P2_choice = self.increment
-        self.record.append("%d, %s, %d, %s, %d, %d\n" % (self.round, str(P1_choice), P1.score, str(P2_choice), P2.score, self.value))
+        self.record.append("%d,%s,%d,%s,%d,%d\n" % (self.round, str(P1_choice), P1.score, str(P2_choice), P2.score, self.value))
 
     def showValue(self):
         print("Current Value: %d" % self.value)
