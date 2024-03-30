@@ -190,7 +190,7 @@ def showLeftCards(leftCards):
         cardlist += (str(card.value) + ", ")
     print("leftCards: (%s)" % cardlist.strip(", "))
 
-def run_game(random_seed='-1'):
+def run_game(random_seed='-1', statistic=False):
 
     # 玩家数量 (2-10)
     PLAYERS = 4
@@ -275,9 +275,9 @@ def run_game(random_seed='-1'):
         eval("P%d.showPenaltyCards()" % i)
         
     # 额外打印游戏结果summary
-    game_result_filename = "game_result.txt"
+    game_result_filename = "game_log/game_result.txt"
     if random_seed != -1:
-        game_result_filename = "game_result_%d.txt" % random_seed
+        game_result_filename = "game_log/game_result_%d.txt" % random_seed
     bullhead_list = []
     with open(game_result_filename, "w") as f:
         for i in range(1, PLAYERS+1):
@@ -286,11 +286,21 @@ def run_game(random_seed='-1'):
         winner = bullhead_list.index(min(bullhead_list))
         f.write("P%s wins." % str(winner + 1))
         f.close()
+    
+    if statistic:
+        # 在已有的文件后面添加行
+        with open("game_log/00_statistics.csv", "a") as f:
+            f.write("%d," % random_seed)
+            for i in range(1, PLAYERS+1):
+                eval("f.write(str(P%d.bullheads) + ',')" % i)
+            f.write("P%s\n" % str(winner + 1))
 
 if __name__ == "__main__":
 
     random_seed = -1
-    if len(sys.argv) > 1:
+    statistic = False
+    if len(sys.argv) > 2:
         random_seed = int(sys.argv[1])
+        statistic = sys.argv[2] == "statistic"
     
-    run_game(random_seed)
+    run_game(random_seed, statistic)
