@@ -1,0 +1,14 @@
+遗传算法入门
+https://zhuanlan.zhihu.com/p/100337680
+
+
+阿尔法狗，蒙特卡洛算法
+https://zhuanlan.zhihu.com/p/475395351
+
+https://zhuanlan.zhihu.com/p/32952677
+
+
+NEAT（通过增强拓扑的进化神经网络）
+https://www.cnblogs.com/bonelee/p/7725264.html
+
+https://blog.csdn.net/weixin_48577398/article/details/118315566
