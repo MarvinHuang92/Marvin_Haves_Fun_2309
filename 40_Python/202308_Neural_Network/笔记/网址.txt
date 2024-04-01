@@ -20,3 +20,16 @@ http://galaxy.agh.edu.pl/~vlsi/AI/backp_t_en/backprop.html
 https://blog.csdn.net/ft_sunshine/article/details/90221691
 
 https://zhuanlan.zhihu.com/p/395323930
+
+
+多项式拟合
+https://zhuanlan.zhihu.com/p/689187479
+
+https://zhuanlan.zhihu.com/p/138080482
+
+https://www.zhihu.com/question/391275893
+
+https://www.zhihu.com/question/61986703
+
+https://fanyi.baidu.com/mtpe-individual/multimodal#/
+
