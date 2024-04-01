@@ -12,3 +12,11 @@ NEAT（通过增强拓扑的进化神经网络）
 https://www.cnblogs.com/bonelee/p/7725264.html
 
 https://blog.csdn.net/weixin_48577398/article/details/118315566
+
+
+反向传播
+http://galaxy.agh.edu.pl/~vlsi/AI/backp_t_en/backprop.html
+
+https://blog.csdn.net/ft_sunshine/article/details/90221691
+
+https://zhuanlan.zhihu.com/p/395323930
