@@ -2,6 +2,7 @@
 
 # import game_6nimmt
 import os
+import random
 
 
 # 定义可变长度的列表类，元素都是 int， 支持直接对列表本身进行加法运算
@@ -101,14 +102,19 @@ def init_record_folder(game_log_folder, game_result_stat_path, players):
         f.close()
 
 def autorun_game(game_num, players):
+    
+    # 初始随机种子：1000以内正整数
+    init_random_seed = random.randint(1,1000)
+    print("\nRandom seed: %d" % init_random_seed)
+    
     for i in range(game_num):
         print("\n==================== Start Game %d =======================" % i)
 
         # 内部函数调用，不好用，随机数种子不会刷新
         # game_6nimmt.run_game(logfile="game_log/game_log_%d.txt" % i, random_seed=i)
         
-        # 外部参数调用，OK，随机数种子=游戏局数
-        os.system("python game_6nimmt.py %d statistic > game_log\\game_log_%d.txt" % (i, i))
+        # 外部参数调用，OK，随机数种子 = 初始随机种子 + 游戏局数
+        os.system("python game_6nimmt.py %d statistic > game_log\\game_log_%d.txt" % (init_random_seed+i, i))
 
         # 游戏结束
         print("\n=================== Finish Game %d =======================" % i)

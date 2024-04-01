@@ -5,11 +5,13 @@ import random, sys
 
 # 定义玩家类
 class Player():
-    def __init__(self, name):
+    def __init__(self, name, is_smart=False):
         self.name = name
         self.handCards = []
         self.penaltyCards = []
         self.bullheads = 0
+        # 区分电脑玩家的智能程度
+        self.is_smart = is_smart
     
     def sortHandCards(self):
         self.handCards.sort()  # 需要对象支持用 < 操作比较大小
@@ -60,19 +62,20 @@ class Player():
 
     # 电脑思考当打出最小牌时，选择收哪一行
     def AiChooseWhenSmallest(self, game):
-
-        return random.randint(1,4)  # 随机收一行
-
-        # 计算每一行牛头数，收牛头最少的，如果并列，收靠前的行
-        bullheads_list = []
-        for row in range(4):
-            bullheads = 0
-            for col in game.table[row]:
-                if col:
-                    bullheads += col.bullheads
-            bullheads_list.append(bullheads)
-        # print(bullheads_list)
-        return(bullheads_list.index(min(bullheads_list)) + 1)
+        # 普通电脑玩家，随机收一行
+        if not self.is_smart:
+            return random.randint(1,4)
+        # 智能电脑玩家：计算每一行牛头数，收牛头最少的，如果并列，收靠前的行
+        else:
+            bullheads_list = []
+            for row in range(4):
+                bullheads = 0
+                for col in game.table[row]:
+                    if col:
+                        bullheads += col.bullheads
+                bullheads_list.append(bullheads)
+            # print(bullheads_list)
+            return(bullheads_list.index(min(bullheads_list)) + 1)
     
     # 人类：当打出最小牌时，选择收哪一行
     def HumanChooseWhenSmallest(self, game):
@@ -218,9 +221,12 @@ def run_game(random_seed='-1', statistic=False):
     # for card in leftCards:
     #     card.showInfo()
 
-    # 创建所有玩家对象
+    # 创建所有玩家对象，最后一名玩家更智能 (is_smart=True)
     for i in range(1, PLAYERS+1):
-        exec("P%d = Player('P%d')" %(i, i))
+        if not i == PLAYERS:
+            exec("P%d = Player('P%d')" %(i, i))
+        else:
+            exec("P%d = Player('P%d', is_smart=True)" %(i, i))
 
     # 固定牌局
     if random_seed != -1:
