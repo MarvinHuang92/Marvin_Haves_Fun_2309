@@ -193,10 +193,10 @@ def showLeftCards(leftCards):
         cardlist += (str(card.value) + ", ")
     print("leftCards: (%s)" % cardlist.strip(", "))
 
-def run_game(random_seed='-1', statistic=False):
+def run_game(players, random_seed, statistic):
 
     # 玩家数量 (2-10)
-    PLAYERS = 4
+    PLAYERS = players
     # 每人手牌数，默认10
     HANDCARDS = 10
     # 人类玩家数量
@@ -303,10 +303,15 @@ def run_game(random_seed='-1', statistic=False):
 
 if __name__ == "__main__":
 
+    # 默认值
+    players = 2
     random_seed = -1
     statistic = False
-    if len(sys.argv) > 2:
-        random_seed = int(sys.argv[1])
-        statistic = sys.argv[2] == "statistic"
     
-    run_game(random_seed, statistic)
+    # 如果有参数输入
+    if len(sys.argv) > 3:
+        players = int(sys.argv[1])
+        random_seed = int(sys.argv[2])
+        statistic = sys.argv[3] == "statistic"
+    
+    run_game(players, random_seed, statistic)
