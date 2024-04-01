@@ -8,10 +8,10 @@ import random
 # 定义可变长度的列表类，元素都是 int， 支持直接对列表本身进行加法运算
 # 为什么不是元组类：元组的元素不可以被改写，无法进行加法运算 （'tuple' object does not support item assignment）
 class VariableLengthIntList():
-    def __init__(self, *kw_members):
+    def __init__(self, *init_members):
         # 格式转换：如果输入str，强制转成int
         int_value = []
-        for i in kw_members:
+        for i in init_members:
             int_value.append(int(i))
         self.value = list(int_value)
         self.length = len(self.value)
@@ -94,6 +94,8 @@ def game_result_statistics(csv_input, csv_output, players):
 
 def init_record_folder(game_log_folder, game_result_stat_path, players):
     os.system("if not exist %s md %s" % (game_log_folder, game_log_folder))
+    os.system("del %s\\*.txt" % game_log_folder)
+    os.system("del %s\\nn_sample_data*" % game_log_folder)
     with open(game_result_stat_path, "w") as f:
         f.write("Game_id,")
         for a in range(players):
@@ -114,7 +116,7 @@ def autorun_game(game_num, players):
         # game_6nimmt.run_game(logfile="game_log/game_log_%d.txt" % i, random_seed=i)
         
         # 外部参数调用，OK，随机数种子 = 初始随机种子 + 游戏局数
-        os.system("python game_6nimmt.py %d %d statistic > game_log\\game_log_%d.txt" % (players, init_random_seed+i, i))
+        os.system("python game_6nimmt.py %d %d statistic > game_log\\game_log_%d.txt" % (players, init_random_seed+i, init_random_seed+i))
 
         # 游戏结束
         print("\n=================== Finish Game %d =======================" % i)
@@ -124,9 +126,9 @@ def autorun_game(game_num, players):
 if __name__ == "__main__":
 
     # 连续进行局数
-    GAME_NUM = 10
+    GAME_NUM = 20
     # 玩家数量
-    PLAYERS = 3
+    PLAYERS = 4
 
     # 游戏结果的保存位置
     game_log_folder = "game_log"
