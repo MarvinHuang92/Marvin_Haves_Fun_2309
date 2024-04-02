@@ -41,3 +41,8 @@ https://fanyi.baidu.com/mtpe-individual/multimodal#/
 https://github.com/yjb6/CS231n-2022
 
 git clone https://github.com/yjb6/CS231n-2022.git
+
+
+
+PyTorch 模型保存 - 坑
+https://blog.csdn.net/qq_41076797/article/details/111085687
