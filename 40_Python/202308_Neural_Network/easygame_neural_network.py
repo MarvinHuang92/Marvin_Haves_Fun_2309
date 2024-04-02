@@ -62,10 +62,10 @@ if __name__ == "__main__":
         y = []
         for i in range(1,100):
             x.append(i)
-            y.append(0.95+0.1*random.random())
+            y.append(0.98+0.04*random.random())
         for i in range(201,300):
             x.append(i)
-            y.append(-0.05+0.1*random.random())
+            y.append(-0.02+0.04*random.random())
         pass
 
     x_reshaped = []
@@ -104,14 +104,14 @@ if __name__ == "__main__":
 
     # 训练模型
     n_features = 1          # 特征数（输入神经元数量，对应样本的 xy 坐标）
-    n_hidden = 10           # 隐藏神经元数量
+    n_hidden = 24           # 隐藏神经元数量
     if model_type == "fitting":
         n_classes = 1
     elif model_type == "classification":
         n_classes = 2           # 类别数（输出神经元数量，对应各个分类的概率）
-    n_epochs = 10001        # 迭代次数
+    n_epochs = 20001        # 迭代次数
     if model_type == "fitting":
-        learning_rate = 0.001   # 学习速率
+        learning_rate = 0.002   # 学习速率
     elif model_type == "classification":
         learning_rate = 0.01   # 学习速率
     n_print_loss = 500      # 每迭代n次，打印当前损失
