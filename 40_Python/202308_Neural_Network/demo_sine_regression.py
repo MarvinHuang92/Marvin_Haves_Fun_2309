@@ -1,4 +1,4 @@
-from sklearn.datasets import make_blobs, make_circles
+# from sklearn.datasets import make_blobs, make_circles
 import torch
 from torch import nn
 import matplotlib.pyplot as plt
@@ -15,7 +15,7 @@ import numpy as np
 
 
 # 定义神经网络类
-from template_neural_network import Network, softmax_epoch
+from neural_network_template import Network, softmax_epoch
 
 if __name__ == "__main__":
     

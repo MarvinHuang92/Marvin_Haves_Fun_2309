@@ -25,7 +25,7 @@ def make_data(num):
 
 
 # 定义神经网络类
-from template_neural_network import Network, softmax_epoch
+from neural_network_template import Network, softmax_epoch
 
 # 绘制决策边界的函数
 def draw_decision_boundary(minx1, maxx1, minx2, maxx2, resolution, model):
