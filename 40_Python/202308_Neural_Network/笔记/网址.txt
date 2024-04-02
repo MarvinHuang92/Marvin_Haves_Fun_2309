@@ -33,3 +33,11 @@ https://www.zhihu.com/question/61986703
 
 https://fanyi.baidu.com/mtpe-individual/multimodal#/
 
+
+
+
+斯坦福课程笔记（来自 github 用户）
+
+https://github.com/yjb6/CS231n-2022
+
+git clone https://github.com/yjb6/CS231n-2022.git
