@@ -74,31 +74,28 @@ if __name__ == "__main__":
     task_type = "load_existing_model"
 
     # 训练并保存模型
-    need_training = False
+    need_training = False  # 跳过训练，直接进行预测
     # need_training = True
 
 
     # 生成数据样本
     # 从 02_nn_sample_data_full.csv 读取
-
-    """先简化一下, 只有两个x输入和一个输出"""
-
     contents = []
-    with open("02_nn_sample_data_full.csv") as f:
+    with open("game_log/02_nn_sample_data_full.csv") as f:
         contents = f.readlines()
         f.close()
 
-    # 输入： NN_state 的前两位
+    # 输入： NN_state 的 0-63 位
     # 输出： 一个 reward 标量
     x = []
     y = []
-    input_col_max = 63  # x的维数，最大值63
+    input_col_max = 64  # x的维数，最大值64
     # 只取有限样本以节省时间
-    sample_start = 4001   # 样本起始点，最小为0
-    sample_end = 4050  # 样本截止点
+    sample_start = 0   # 样本起始点，最小为0
+    sample_end = 4000  # 样本截止点
 
-    axis_0 = range(sample_start, sample_end)
-    for i in axis_0:
+    sample_index_range = range(sample_start, sample_end)
+    for i in sample_index_range:
         line = contents[i].strip().split(',')
         x_i = []
         for i in range(input_col_max):
@@ -156,7 +153,7 @@ if __name__ == "__main__":
     """
 
     # 预览y的分布
-    plt.scatter(axis_0, y, color="green")
+    plt.scatter(sample_index_range, y, color="green")
     # plt.show()
 
 
@@ -172,17 +169,17 @@ if __name__ == "__main__":
 
     # 设置模型参数
     n_features = input_col_max  # 特征数（输入神经元数量，对应样本的 xy 坐标）
-    n_hidden = 120              # 隐藏神经元数量
+    n_hidden = 500              # 隐藏神经元数量
     if model_type == "fitting":
         n_classes = 1
     elif model_type == "classification":
         n_classes = 2           # 类别数（输出神经元数量，对应各个分类的概率）
-    n_epochs = 5001             # 迭代次数
+    n_epochs = 1001             # 迭代次数
     if model_type == "fitting":
-        learning_rate = 0.001   # 学习速率，可以在训练中途调整，先快后慢(0.01 -> 0.0001)
+        learning_rate = 0.0001   # 学习速率，可以在训练中途调整，先快后慢(0.01 -> 0.0001)
     elif model_type == "classification":
         learning_rate = 0.01    # 学习速率
-    n_print_loss = 500          # 每迭代n次，打印当前损失
+    n_print_loss = 200          # 每迭代n次，打印当前损失
 
     # 创建新的模型
     if task_type == "create_new_model":
@@ -253,7 +250,8 @@ if __name__ == "__main__":
     print("\nMean Square Error: %f" % mse)
     print("Root Mean Square Error: %f\n" % sqrt(mse))
 
-    plt.scatter(axis_0, h, color="orange")
+    plt.scatter(sample_index_range, h, color="orange")
+    # plt.scatter(sample_index_range, y-h, color="blue")
     plt.show()
 
     

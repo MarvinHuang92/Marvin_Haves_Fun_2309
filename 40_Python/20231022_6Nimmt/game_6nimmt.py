@@ -14,12 +14,13 @@ class NNSampleData():
         # 40-59位：10张手牌的数字（偶数位）和牛头数量（奇数位）
         # 60位：剩余手牌数量
         # 61位：当前分数（惩罚牛头数）
+        # 62位：决策类型：0-出牌，1-收一整行
         self.state = []
         ### Action ###
-        # 62位：打出的手牌index（0-9）
+        # 63位：打出的手牌index（0-9）或收的行数（1-4）
         self.action = 0
         ### Reward ###
-        # 63位：打出手牌后的分数（或者分数delta？）
+        # 64位：执行动作后的分数
         self.reward = 0
         # 总表
         self.final_list = []
@@ -30,16 +31,17 @@ class NNSampleData():
 
 # 定义玩家类
 class Player():
-    def __init__(self, name, handcardsmax, is_smart=False):
-        self.name = name
-        self.handCardsMax = handcardsmax
-        self.handCards = []
-        self.penaltyCards = []
-        self.bullheads = 0
-        # 区分电脑玩家的智能程度
-        self.is_smart = is_smart
+    def __init__(self, name):
+        self.name = name  # P1, P2...
+        self.handCards = []  # 手牌
+        self.penaltyCards = []  # 惩罚牌
+        self.bullheads = 0  # 惩罚牌的牛头总数（罚分）
+        # 区分玩家的智能程度 {simple_ai, advanced_ai, human, network}
+        self.intellegence = "simple_ai"
         # 用于训练神经网络的指令集
-        self.NN_Data = NNSampleData()
+        self.NN_data = NNSampleData()
+        # 玩家的神经网络模型（若没有神经网络，默认None）
+        self.NN_model = None
     
     def sortHandCards(self):
         self.handCards.sort()  # 需要对象支持用 < 操作比较大小
@@ -58,64 +60,75 @@ class Player():
             bullheads += card.bullheads
         print("%s's PenaltyCards: (%s), Bullheads: %d" % (self.name, cardlist.strip(", "), bullheads))
         self.bullheads = bullheads  # 将牛头数记录在玩家属性中
-        self.NN_Data.reward = self.bullheads  # 更新训练样本集 - Reward
+        self.NN_data.reward = self.bullheads  # 更新训练样本集 - Reward
     
-    def playCard(self, game, init_table_data, human=False):
+    def playCard(self, game):
         # 更新 State 样本集
         # 桌面牌型
-        self.NN_Data.state = init_table_data[:]  # 注意list的赋值要加上[:]，否则将成为对原list的引用，无法修改
+        self.NN_data.state = game.table_data[:]  # 注意list的赋值要加上[:]，否则将成为对原list的引用，无法修改
         # 出牌前的手牌
         for card in self.handCards:
-            self.NN_Data.state += [card.value, card.bullheads]
+            self.NN_data.state += [card.value, card.bullheads]
         # 手牌不足10张，补足空位
-        for i in range(self.handCardsMax - len(self.handCards)):
-            self.NN_Data.state += [0, 0]
+        for i in range(game.max_round - len(self.handCards)):
+            self.NN_data.state += [0, 0]
         # 出牌前的手牌数
-        self.NN_Data.state += [len(self.handCards)]
+        self.NN_data.state += [len(self.handCards)]
         # 出牌前的牛头数
-        self.NN_Data.state += [self.bullheads]
+        self.NN_data.state += [self.bullheads]
+        # 决策类型=0（出牌）
+        self.NN_data.state += [0]
 
         # 选择出哪张牌
-        if human:
-            card, index = self.HumanChooseCardToPlay(game)
-        else:
-            card, index = self.AiChooseCardToPlay(game)
+        card, index = self.chooseCardToPlay(game)
         self.handCards.pop(index)
         print("%s plays %s. (index: %d)" % (self.name, card.name, index))
         game.stash.append({"player":self, "card":card})
         
         # 将出牌的脚标加入 Action 样本集
-        self.NN_Data.action = index
+        self.NN_data.action = index
 
-    # 电脑思考该出哪张牌
-    def AiChooseCardToPlay(self, game):
-        index = random.randint(0, game.left_round)
-        return self.handCards[index], index  # 随机出一张牌
-
-    # 人类出牌
-    def HumanChooseCardToPlay(self, game):
-        # 最后一局，不必询问
-        if game.left_round == 0:
-            return self.handCards[0], 0
-        # 手牌多于一张，提示玩家选牌
-        else:
-            self.showHandCards()
-            a = "0"
-            while True:
-                for card in self.handCards:
-                    if str(card.value) == a:
-                        index = self.handCards.index(card)
-                        return card, index
-                a = input("%s: Please choose a card to play..." % self.name)
+    # 玩家思考该出哪张牌
+    def chooseCardToPlay(self, game):
+        # 普通电脑
+        if self.intellegence == "simple_ai":
+            index = random.randint(0, game.left_round)  # 随机出一张牌
+        # 高级电脑
+        elif self.intellegence == "advanced_ai":
+            index = random.randint(0, game.left_round)  # 随机出一张牌
+        # 人类玩家
+        elif self.intellegence == "human":
+            # 最后一局，不必询问
+            if game.left_round == 0:
+                return self.handCards[0], 0
+            # 手牌多于一张，提示玩家选牌
+            else:
+                self.showHandCards()
+                while True:
+                    a = input("%s: Please choose a card to play..." % self.name)
+                    for card in self.handCards:
+                        if str(card.value) == a:
+                            index = self.handCards.index(card)
+                            return card, index
+        # 神经网络
+        elif self.intellegence == "network":
+            index = random.randint(0, game.left_round)  # 随机出一张牌
+        
+        return self.handCards[index], index  
         
 
-    # 电脑思考当打出最小牌时，选择收哪一行
-    def AiChooseWhenSmallest(self, game):
-        # 普通电脑玩家，随机收一行
-        if not self.is_smart:
-            return random.randint(1,4)
-        # 智能电脑玩家：计算每一行牛头数，收牛头最少的，如果并列，收靠前的行
-        else:
+    # 当打出最小牌时，选择收哪一行
+    def chooseRowWhenSmallest(self, game, card):
+        # 更新 State 样本集
+        # 在 playCard() 中已经记录样本，这里仅更新state的最后一位
+        # 决策类型=1（收一整行）
+        self.NN_data.state[-1] = 1
+        
+        # 普通电脑，随机收一行
+        if self.intellegence == "simple_ai":
+            ret = random.randint(1,4)
+        # 高级电脑：计算每一行牛头数，收牛头最少的，如果并列，收靠前的行
+        elif self.intellegence == "advanced_ai":
             bullheads_list = []
             for row in range(4):
                 bullheads = 0
@@ -124,11 +137,22 @@ class Player():
                         bullheads += col.bullheads
                 bullheads_list.append(bullheads)
             # print(bullheads_list)
-            return(bullheads_list.index(min(bullheads_list)) + 1)
-    
-    # 人类：当打出最小牌时，选择收哪一行
-    def HumanChooseWhenSmallest(self, game):
-        pass
+            ret = bullheads_list.index(min(bullheads_list)) + 1
+        # 人类玩家
+        elif self.intellegence == "human":
+            while True:
+                a = input("%s: You played a smallest card! (%s) Please choose a row to clean... (1,2,3,4)" % (self.name, card.name))
+                for r in range(1,5):
+                    if str(r) == a:
+                        self.NN_data.action = r  # 更新 Action 样本集
+                        return r
+        # 神经网络
+        elif self.intellegence == "network":
+            ret =  random.randint(1,4)
+        
+        # 更新 Action 样本集
+        self.NN_data.action = ret
+        return ret
 
 
 # 定义“牌”类
@@ -171,8 +195,12 @@ class Game():
         # 定义缓存区，存放玩家一回合中打出的牌
         # 其中元素示例 {"player":P1, "card":Card_1}
         self.stash = []
-        # 剩余回合数，默认为10-1，可通过参数改变
-        self.left_round = rounds-1
+        # 当前桌面牌型的 NN_data 样本集格式（前40位）
+        self.table_data = []
+        # 总回合数，默认10
+        self.max_round = rounds
+        # 剩余回合数，默认10-1
+        self.left_round = rounds - 1
     
     # 整理打出的牌（每回合结算）
     def arrangeCard(self):
@@ -190,7 +218,7 @@ class Game():
                 diffs.append(item["card"].value-last_card_value)
             # 如果是场上最小的牌，玩家自行选择清除一行
             if max(diffs) < 0:
-                target_row = item["player"].AiChooseWhenSmallest(self)
+                target_row = item["player"].chooseRowWhenSmallest(self, item["card"])
                 print(item["player"].name + " plays " + item["card"].name + ", it is the smallest card! cleaned row %d as %s's Penalty." % (target_row, item["player"].name))
                 # 传入的参数为 1-4 行，转换为脚标 0-3
                 row = target_row - 1
@@ -253,6 +281,7 @@ def showLeftCards(leftCards):
         cardlist += (str(card.value) + ", ")
     print("leftCards: (%s)" % cardlist.strip(", "))
 
+# 游戏主进程
 def run_game(players, random_seed, statistic):
 
     # 玩家数量 (2-10)
@@ -273,9 +302,27 @@ def run_game(players, random_seed, statistic):
     # 创建游戏
     game = Game(HANDCARDS)
 
+    # 创建所有玩家对象
+    playerList = []
+    for i in range(1, PLAYERS+1):
+        exec("P%d = Player('P%d')" %(i, i))  # 需要创建新变量时，用 exec，否则可以用 exec 或 eval
+        eval("playerList.append(P%d)" %i)
+    
+    # 赋予玩家不同身份
+    # 令前面的玩家是人类
+    for i in range(HUMAN_PLAYERS):
+        playerList[i].intellegence = "human"
+
+    # 令最后一名玩家更智能
+    # playerList[-1].intellegence = "advanced_ai"
+
+    # 令第N名玩家拥有神经网络
+    # N = 2
+    # playerList[N-1].intellegence = "network"
+
     # 创建104张牌对象
     leftCards = []
-    for i in range(1,105):
+    for i in range(1, 105):
         exec("Card_%d = Card(%d)" %(i, i))  # 需要创建新变量时，用 exec，否则可以用 exec 或 eval
         eval("leftCards.append(Card_%d)" %i)
     
@@ -283,18 +330,8 @@ def run_game(players, random_seed, statistic):
     # for card in leftCards:
     #     card.showInfo()
 
-    # 创建所有玩家对象，最后一名玩家更智能 (is_smart=True)
-    playerList = []
-    for i in range(1, PLAYERS+1):
-        if not i == PLAYERS:
-            exec("P%d = Player('P%d', HANDCARDS)" %(i, i))
-        else:
-            exec("P%d = Player('P%d', HANDCARDS, is_smart=True)" %(i, i))
-        eval("playerList.append(P%d)" %i)
-
-    # 固定牌局
+    # 设置牌局随机数种子
     if random_seed != -1:
-        # print(random_seed)
         random.seed(random_seed)
 
     # 洗牌
@@ -302,10 +339,10 @@ def run_game(players, random_seed, statistic):
 
     # 发牌
     for p in playerList:
-        for i in range(HANDCARDS):
+        for i in range(game.max_round):
             p.handCards.append(leftCards.pop(0))
         # 人类玩家的手牌将被排序
-        if i <= HUMAN_PLAYERS:
+        if p.intellegence == "human":
             p.sortHandCards()
         p.showHandCards()
 
@@ -318,30 +355,26 @@ def run_game(players, random_seed, statistic):
     showLeftCards(leftCards)
 
     # 游戏开始
-    for i in range(HANDCARDS):
+    for i in range(game.max_round):
         print("\n=============== Start Round %s ===================" % str(i+1))
 
-        # 显示当前桌面牌型
-        init_table_data = game.showTable()  # 准备样本集：前40位
+        # 显示当前桌面牌型，并存入样本集：前40位
+        game.table_data = game.showTable()
 
         # 玩家出牌，并将桌面牌型和手牌加入样本集
-        # 人类玩家出牌
-        for i in range(HUMAN_PLAYERS):
-            playerList[i].playCard(game, init_table_data, human=True)
-        # 电脑玩家出牌
-        for i in range(HUMAN_PLAYERS, PLAYERS):
-            playerList[i].playCard(game, init_table_data)
+        for p in playerList:
+            p.playCard(game)
 
-        # 比较大小，并按顺序放置牌
+        # 处理缓存区：比较玩家出牌大小，并按顺序放置牌
         game.arrangeCard()
         game.stash = []  # 清空缓存区
         
         for p in playerList:
             p.showPenaltyCards()
-            # 显示当前回合的训练样本集
-            p.NN_Data.calcFinalList()
+            # 生成当前回合，当前玩家的训练样本集
+            p.NN_data.calcFinalList()
             # 将当前回合的样本加入总样本集，最后统一打印
-            NN_Sample_Data.append(str(p.NN_Data.final_list).strip("[").strip("]") + "\n")
+            NN_Sample_Data.append(str(p.NN_data.final_list).strip("[").strip("]") + "\n")
 
         # 游戏剩余回合数-1
         game.leftRoundDecrement()

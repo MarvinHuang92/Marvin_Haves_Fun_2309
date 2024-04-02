@@ -105,8 +105,8 @@ def init_record_folder(game_log_folder, game_result_stat_path, players):
 
 def autorun_game(game_num, players):
     
-    # 初始随机种子：1000以内正整数
-    init_random_seed = random.randint(1,1000)
+    # 初始随机种子：10000以内正整数
+    init_random_seed = random.randint(1,10000)
     print("\nRandom seed: %d" % init_random_seed)
     
     for i in range(game_num):
@@ -126,7 +126,7 @@ def autorun_game(game_num, players):
 if __name__ == "__main__":
 
     # 连续进行局数
-    GAME_NUM = 20
+    GAME_NUM = 100
     # 玩家数量
     PLAYERS = 4
 
