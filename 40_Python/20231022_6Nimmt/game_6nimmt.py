@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import random, sys
-
+import torch  
+from neural_network_6nimmt import load_model
 
 # 用于神经网络训练的样本集，每个回合，每个玩家出牌时，更新一组
 # State / Action 在玩家的 playCard() 方法中更新
@@ -86,7 +87,10 @@ class Player():
         game.stash.append({"player":self, "card":card})
         
         # 将出牌的脚标加入 Action 样本集
-        self.NN_data.action = index
+        if not self.intellegence == "network":
+            self.NN_data.action = index
+        else:
+            self.NN_data.action = -1  # 如果玩家时神经网络，用-1标记，后续不会加入样本集
 
     # 玩家思考该出哪张牌
     def chooseCardToPlay(self, game):
@@ -112,7 +116,28 @@ class Player():
                             return card, index
         # 神经网络
         elif self.intellegence == "network":
-            index = random.randint(0, game.left_round)  # 随机出一张牌
+            # 提供神经网络的输入
+            x_list = []
+            s_i = list(self.NN_data.state)  # 当前state信息
+            # print(s_i)
+            for i in range(len(self.handCards)):
+                x_i = s_i + [i]  # x_i = state + 每种可能的action
+                x_list.append(x_i)
+            x = torch.Tensor(x_list)  # 将x由二维list转为二维张量
+            # print(x)
+
+            # 使用 model 预测结果 h, 表示每一种action对应的预测reward
+            h = self.NN_model(x).data   #.data()可以提取张量部分，舍弃梯度函数部分
+            print("\n" + self.name + "'s neural network output:\n" + str(h[:]) + "\n")
+            
+            # 将张量 h 变形为 list
+            h_list = []
+            for h_i in h:  # 将二维张量拆解成一维
+                h_list.append(h_i[0].item())  #.item()将一维张量转为数值
+            # print(h_list)
+                
+            # 输出预测reward（罚分）最小的action
+            index = h_list.index(min(h_list))
         
         return self.handCards[index], index  
         
@@ -148,7 +173,7 @@ class Player():
                         return r
         # 神经网络
         elif self.intellegence == "network":
-            ret =  random.randint(1,4)
+            ret = random.randint(1,4)
         
         # 更新 Action 样本集
         self.NN_data.action = ret
@@ -317,8 +342,9 @@ def run_game(players, random_seed, statistic):
     # playerList[-1].intellegence = "advanced_ai"
 
     # 令第N名玩家拥有神经网络
-    # N = 2
-    # playerList[N-1].intellegence = "network"
+    N = 2
+    playerList[N-1].intellegence = "network"
+    playerList[N-1].NN_model = load_model()
 
     # 创建104张牌对象
     leftCards = []
@@ -372,9 +398,10 @@ def run_game(players, random_seed, statistic):
         for p in playerList:
             p.showPenaltyCards()
             # 生成当前回合，当前玩家的训练样本集
-            p.NN_data.calcFinalList()
-            # 将当前回合的样本加入总样本集，最后统一打印
-            NN_Sample_Data.append(str(p.NN_data.final_list).strip("[").strip("]") + "\n")
+            if not p.NN_data.action == -1:  # 神经网络玩家的动作，不加入样本
+                p.NN_data.calcFinalList()
+                # 将当前回合的样本加入总样本集，最后统一打印
+                NN_Sample_Data.append(str(p.NN_data.final_list).strip("[").strip("]") + "\n")
 
         # 游戏剩余回合数-1
         game.leftRoundDecrement()
@@ -422,7 +449,7 @@ def run_game(players, random_seed, statistic):
 if __name__ == "__main__":
 
     # 默认值
-    players = 2
+    players = 4
     random_seed = -1
     statistic = False
     

@@ -9,7 +9,7 @@ model_type = "fitting"         # 函数拟合问题，输出连续值
 task_type = "prediction"               # 加载模型，跳过训练，直接进行预测
 
 batch_training = True   # 是否自动进行多组训练
-training_batch = 3      # 训练组数
+training_batch = 6      # 训练组数
 
 plot = True     # 是否显示拟合图像
 ###############################################################
@@ -19,7 +19,7 @@ csv_input = "game_log/02_nn_sample_data_full.csv"
 input_col_max = 64  # x的维数，最大值64
 
 sample_start_tr = 0   # 训练样本起点，最小为0
-batchsize_tr = 1000    # 训练时每组样本数
+batchsize_tr = 500    # 训练时每组样本数
 
 sample_start_pr = 3000   # 测试样本起点，最小为0
 batchsize_pr = 100    # 测试时每组样本数
@@ -49,7 +49,7 @@ n_print_loss = 200          # 每迭代n次，打印当前损失
 
 # 运行模型
 if __name__ == "__main__":
-    import neural_network_6nimmt
+    import neural_network_6nimmt as nn6
     
     if not batch_training:
         training_batch = 1
@@ -67,7 +67,7 @@ if __name__ == "__main__":
             else:
                 plot = True
         print("\n====== Task [%s], Batch %d ======\n" % (task_type, current_batch))
-        neural_network_6nimmt.main(task_type, current_batch, plot)
+        nn6.main(task_type, current_batch, plot)
     print("====== Task finished ======\n")
 
     

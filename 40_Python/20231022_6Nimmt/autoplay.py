@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # import game_6nimmt
-import os
+import os, sys
 import random
 
 
@@ -109,6 +109,10 @@ def autorun_game(game_num, players):
     init_random_seed = random.randint(1,10000)
     print("\nRandom seed: %d" % init_random_seed)
     
+    python_exe = "python"
+    if os.path.isdir("C:/TCC/Tools/python3/3.7.4-29_WIN64_2"):
+        python_exe = r"C:\TCC\Tools\python3\3.7.4-29_WIN64_2\python.exe"
+
     for i in range(game_num):
         print("\n==================== Start Game %d =======================" % i)
 
@@ -116,7 +120,7 @@ def autorun_game(game_num, players):
         # game_6nimmt.run_game(logfile="game_log/game_log_%d.txt" % i, random_seed=i)
         
         # 外部参数调用，OK，随机数种子 = 初始随机种子 + 游戏局数
-        os.system("python game_6nimmt.py %d %d statistic > game_log\\game_log_%d.txt" % (players, init_random_seed+i, init_random_seed+i))
+        os.system("%s game_6nimmt.py %d %d statistic > game_log\\game_log_%d.txt" % (python_exe, players, init_random_seed+i, init_random_seed+i))
 
         # 游戏结束
         print("\n=================== Finish Game %d =======================" % i)
@@ -126,7 +130,7 @@ def autorun_game(game_num, players):
 if __name__ == "__main__":
 
     # 连续进行局数
-    GAME_NUM = 100
+    GAME_NUM = 20
     # 玩家数量
     PLAYERS = 4
 
