@@ -1,4 +1,8 @@
 from torch import nn
+import matplotlib.pyplot as plt
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D  # 用于绘制三维图像
+
 
 # 基本步骤：
 # 1. 定义神经网络类 Network (包含中间层种类：线性 or 卷积，激活函数的选择)
@@ -43,3 +47,40 @@ def softmax_epoch(x, y, network, criterion, optimizer, n_epochs, n_print_loss):
             print("%d iterations: loss = %.4lf" % (epoch, loss.item()))
     
     return network
+
+
+
+# 计算均方误差（参考值为0，而非样本的平均值）
+def calcMSE(array):
+    square_error = 0.0
+    for a in array:
+        square_error += a**2
+    return square_error / len(array)
+
+
+# 用于绘制二元函数 z = f(x, y)
+def plot_3d_figure(X, Y, Z, x_label="x", y_label="y", z_label="z", title=""):
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')  # 设置为3维
+    ax.plot_surface(X, Y, Z, cmap='viridis')
+    ax.set_xlabel(x_label)  # 设置坐标轴标签
+    ax.set_ylabel(y_label)
+    ax.set_zlabel(z_label)
+    plt.title(title)  # 在图中显示函数表达式
+    plt.show()
+
+
+# 绘制二元函数图像的示例
+"""
+def f(x, y):  # 设置函数表达式
+    return np.sin(x) + np.sin(y) - np.sin(x+y)
+
+def draw_fxy_figure():
+    x = np.linspace(-2*np.pi, 2*np.pi, 100)  # 设置变量范围, 100为样本点数
+    y = np.linspace(-2*np.pi, 2*np.pi, 100)
+    X, Y = np.meshgrid(x, y)
+    Z = f(X, Y)
+    plot_3d_figure(X, Y, Z, title="f(x,y)=sinx+siny-sin(x+y)")
+
+draw_fxy_figure()
+"""
