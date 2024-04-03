@@ -37,10 +37,12 @@ class Player():
         self.handCards = []  # 手牌
         self.penaltyCards = []  # 惩罚牌
         self.bullheads = 0  # 惩罚牌的牛头总数（罚分）
+        self.played_smallest = False  # 本回合是否出了最小牌，会在每回合playCard之前重置
         # 区分玩家的智能程度 {simple_ai, advanced_ai, human, network}
         self.intellegence = "simple_ai"
-        # 用于训练神经网络的指令集
-        self.NN_data = NNSampleData()
+        # 用于训练神经网络的指令集，0用于出牌时，1用于打出最小牌后收一整行时
+        self.NN_data_0 = NNSampleData()  # 每回合都记录
+        self.NN_data_1 = NNSampleData()  # 仅当 played_smallest 时记录
         # 玩家的神经网络模型（若没有神经网络，默认None）
         self.NN_model = None
     
@@ -61,24 +63,35 @@ class Player():
             bullheads += card.bullheads
         print("%s's PenaltyCards: (%s), Bullheads: %d" % (self.name, cardlist.strip(", "), bullheads))
         self.bullheads = bullheads  # 将牛头数记录在玩家属性中
-        self.NN_data.reward = self.bullheads  # 更新训练样本集 - Reward
+        self.NN_data_0.reward = self.bullheads  # 更新训练样本集 - Reward
+        self.NN_data_1.reward = self.bullheads
     
-    def playCard(self, game):
-        # 更新 State 样本集
+    # 收集当前场上信息，用于更新 State 样本
+    def getGameStateToNNData(self, game, situation=0):
         # 桌面牌型
-        self.NN_data.state = game.table_data[:]  # 注意list的赋值要加上[:]，否则将成为对原list的引用，无法修改
+        state = game.table_data[:]  # 注意list的赋值要加上[:]，否则将成为对原list的引用，无法修改
         # 出牌前的手牌
         for card in self.handCards:
-            self.NN_data.state += [card.value, card.bullheads]
+            state += [card.value, card.bullheads]
         # 手牌不足10张，补足空位
         for i in range(game.max_round - len(self.handCards)):
-            self.NN_data.state += [0, 0]
+            state += [0, 0]
         # 出牌前的手牌数
-        self.NN_data.state += [len(self.handCards)]
+        state += [len(self.handCards)]
         # 出牌前的牛头数
-        self.NN_data.state += [self.bullheads]
-        # 决策类型=0（出牌）
-        self.NN_data.state += [0]
+        state += [self.bullheads]
+        
+        # 赋值给 NN_data_X，同时加上“场景”状态位
+        # 0=出牌时，1=打出最小牌需要收一行时
+        # if-else 防止同一回合内 NN_data_1 覆盖了 NN_data_0
+        if situation == 0:
+            self.NN_data_0.state = (state + [situation])
+        elif situation == 1:
+            self.NN_data_1.state = (state + [situation])
+
+    def playCard(self, game):
+        # 收集 State 信息
+        self.getGameStateToNNData(game)
 
         # 选择出哪张牌
         card, index = self.chooseCardToPlay(game)
@@ -88,9 +101,9 @@ class Player():
         
         # 将出牌的脚标加入 Action 样本集
         if not self.intellegence == "network":
-            self.NN_data.action = index
+            self.NN_data_0.action = index
         else:
-            self.NN_data.action = -1  # 如果玩家时神经网络，用-1标记，后续不会加入样本集
+            self.NN_data_0.action = -1  # 如果玩家是神经网络，用-1标记，后续不会加入样本集
 
     # 玩家思考该出哪张牌
     def chooseCardToPlay(self, game):
@@ -116,38 +129,21 @@ class Player():
                             return card, index
         # 神经网络
         elif self.intellegence == "network":
-            # 提供神经网络的输入
-            x_list = []
-            s_i = list(self.NN_data.state)  # 当前state信息
-            # print(s_i)
+            # 列出所有可能的action
+            action_list = []
             for i in range(len(self.handCards)):
-                x_i = s_i + [i]  # x_i = state + 每种可能的action
-                x_list.append(x_i)
-            x = torch.Tensor(x_list)  # 将x由二维list转为二维张量
-            # print(x)
-
-            # 使用 model 预测结果 h, 表示每一种action对应的预测reward
-            h = self.NN_model(x).data   #.data()可以提取张量部分，舍弃梯度函数部分
-            print("\n" + self.name + "'s neural network output:\n" + str(h[:]) + "\n")
-            
-            # 将张量 h 变形为 list
-            h_list = []
-            for h_i in h:  # 将二维张量拆解成一维
-                h_list.append(h_i[0].item())  #.item()将一维张量转为数值
-            # print(h_list)
-                
-            # 输出预测reward（罚分）最小的action
-            index = h_list.index(min(h_list))
+                action_list.append(i)  # 手牌的脚标
+            # 计算最优 action
+            index = self.neuronNetworkCalc(self.NN_data_0, action_list)
         
         return self.handCards[index], index  
         
 
     # 当打出最小牌时，选择收哪一行
     def chooseRowWhenSmallest(self, game, card):
-        # 更新 State 样本集
-        # 在 playCard() 中已经记录样本，这里仅更新state的最后一位
-        # 决策类型=1（收一整行）
-        self.NN_data.state[-1] = 1
+        # 更新 State 样本集，场景=1（收一整行）
+        self.played_smallest = True
+        self.getGameStateToNNData(game, situation=1)
         
         # 普通电脑，随机收一行
         if self.intellegence == "simple_ai":
@@ -169,15 +165,47 @@ class Player():
                 a = input("%s: You played a smallest card! (%s) Please choose a row to clean... (1,2,3,4)" % (self.name, card.name))
                 for r in range(1,5):
                     if str(r) == a:
-                        self.NN_data.action = r  # 更新 Action 样本集
+                        self.NN_data_1.action = r  # 更新 Action 样本集
                         return r
         # 神经网络
         elif self.intellegence == "network":
-            ret = random.randint(1,4)
+            # 列出所有可能的action
+            action_list = [1,2,3,4]  # 要收牌的行号，注意从1开始
+            # 计算最优 action，注意结果也要+1
+            ret = self.neuronNetworkCalc(self.NN_data_1, action_list) + 1
         
         # 更新 Action 样本集
-        self.NN_data.action = ret
+        if not self.intellegence == "network":
+            self.NN_data_1.action = ret
+        else:
+            self.NN_data_1.action = -1  # 如果玩家是神经网络，用-1标记，后续不会加入样本集
+
         return ret
+
+    # 神经网络计算方法
+    def neuronNetworkCalc(self, NN_data, action_list):
+        # 提供神经网络的输入
+        x_list = []
+        s_i = list(NN_data.state)  # 当前state信息
+        # print(s_i)
+        for a in action_list:
+            x_i = s_i + [a]  # x_i = state + 每种可能的action
+            x_list.append(x_i)
+        x = torch.Tensor(x_list)  # 将x由二维list转为二维张量
+        # print(x)
+
+        # 使用 model 预测结果 h, 表示每一种action对应的预测reward
+        h = self.NN_model(x).data   #.data()可以提取张量部分，舍弃梯度函数部分
+        print("\n" + self.name + "'s neural network output:\n" + str(h[:]) + "\n")
+        
+        # 将张量 h 变形为 list
+        h_list = []
+        for h_i in h:  # 将二维张量拆解成一维
+            h_list.append(h_i[0].item())  #.item()将一维张量转为数值
+        # print(h_list)
+            
+        # 输出预测reward（罚分）最小的action
+        return h_list.index(min(h_list))
 
 
 # 定义“牌”类
@@ -389,6 +417,7 @@ def run_game(players, random_seed, statistic):
 
         # 玩家出牌，并将桌面牌型和手牌加入样本集
         for p in playerList:
+            p.played_smallest = False  # 重置玩家状态
             p.playCard(game)
 
         # 处理缓存区：比较玩家出牌大小，并按顺序放置牌
@@ -398,10 +427,13 @@ def run_game(players, random_seed, statistic):
         for p in playerList:
             p.showPenaltyCards()
             # 生成当前回合，当前玩家的训练样本集
-            if not p.NN_data.action == -1:  # 神经网络玩家的动作，不加入样本
-                p.NN_data.calcFinalList()
+            if not p.NN_data_0.action == -1:  # 神经网络玩家的动作，不加入样本
+                p.NN_data_0.calcFinalList()
                 # 将当前回合的样本加入总样本集，最后统一打印
-                NN_Sample_Data.append(str(p.NN_data.final_list).strip("[").strip("]") + "\n")
+                NN_Sample_Data.append(str(p.NN_data_0.final_list).strip("[").strip("]") + "\n")
+            if (not p.NN_data_1.action == -1) and p.played_smallest:  # 如果本回合打出了最小牌
+                p.NN_data_1.calcFinalList()
+                NN_Sample_Data.append(str(p.NN_data_1.final_list).strip("[").strip("]") + "\n")
 
         # 游戏剩余回合数-1
         game.leftRoundDecrement()
@@ -438,7 +470,14 @@ def run_game(players, random_seed, statistic):
     nn_sample_data_filename = "game_log/nn_sample_data.csv"
     if random_seed != -1:
         nn_sample_data_filename = "game_log/nn_sample_data_%d.csv" % random_seed
+    
+    # 将记录打乱后再保存
+    random.shuffle(NN_Sample_Data)
+
+    csv_headers = "Table11,,,,,,,,,,Table21,,,,,,,,,,Table31,,,,,,,,,,Table41,,,,,,,,,,\
+        HandCard0,,,,,,,,,,,,,,,,,,HandCard9,,leftHandCard,CurrBullheads,Situation,Action,Reward"
     with open(nn_sample_data_filename, "w") as f:
+        f.write(csv_headers + "\n")
         f.writelines(NN_Sample_Data)
         f.close()
     # 历史总表

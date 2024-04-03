@@ -21,7 +21,8 @@ input_col_max = 64  # x的维数，最大值64
 sample_start_tr = 0   # 训练样本起点，最小为0
 batchsize_tr = 500    # 训练时每组样本数
 
-sample_start_pr = 3000   # 测试样本起点，最小为0
+# sample_start_pr = 0   # 测试样本起点，最小为0
+sample_start_pr = sample_start_tr + batchsize_tr * training_batch
 batchsize_pr = 100    # 测试时每组样本数
 
 
