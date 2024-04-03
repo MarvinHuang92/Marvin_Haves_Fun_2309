@@ -25,8 +25,26 @@ sys.path.append("../202308_Neural_Network")  # 跨目录引用模块，先将所
 from neural_network_template import Network, softmax_epoch, calcMSE, plot_3d_figure
 
 
+# 样本区间初始化
+sample_start = 0
+sample_end = 0
+sample_index_range = []
+
+# 计算样本区间
+def calcSampleRange(current_batch):
+    global sample_start, sample_end, sample_index_range
+    if task_type == "prediction":
+        sample_start = sample_start_pr + batchsize_pr * (current_batch - 1)
+        sample_end = sample_start + batchsize_pr
+    else:
+        sample_start = sample_start_tr + batchsize_tr * (current_batch - 1)
+        sample_end = sample_start + batchsize_tr
+    sample_index_range = range(sample_start, sample_end)
+    print("Sample index: [%d-%d]\n" % (sample_start, sample_end - 1))
+
+
 # 生成数据样本
-def get_data():
+def get_data(plot):
         
     # 从 csv 读取
     contents = []
@@ -127,10 +145,12 @@ def create_model():
 
 # 加载已有的模型
 def load_model():
+    print("Loading model: %s\n" % model_path)
     return torch.load(model_path)
 
 # 保存模型
 def save_model(model):
+    print("\nSaving model: %s" % model_path)
     torch.save(model, model_path)     
 
 # 训练模型 (lr=learning_rate)
@@ -142,13 +162,15 @@ def training_model(model, lr, x, y):
         criterion = nn.CrossEntropyLoss()  # 交叉熵损失函数
     # Adam 优化器
     optimizer = torch.optim.Adam(model.parameters(), lr)
+
+    print("Learning Rate: %f\n" % lr)
     
     # 开始 softmax 回归模型的循环迭代，并返回训练好的模型
     return softmax_epoch(x, y, model, criterion, optimizer, n_epochs, n_print_loss)
 
     
 # 使用模型进行预测，并显示结果
-def predict(model, x, y):
+def predict(model, x, y, plot):
     # 显示预测结果和真实值的区别
     # h 为模型预测结果，y 为数据样本结果
     if model_type == "fitting":
@@ -193,7 +215,7 @@ def predict(model, x, y):
         plt.show()
 
 
-def main():
+def main(task_type, current_batch, plot):
     # 判断任务类型
     if task_type == "training_new_model":
         model_input = "create_new_model"
@@ -205,8 +227,11 @@ def main():
         model_input = "load_existing_model"
         training_model_switch = False
 
+    # 计算样本区间
+    calcSampleRange(current_batch)
+
     # 生成数据样本
-    x, y = get_data()
+    x, y = get_data(plot)
 
     # 创建新模型
     if model_input == "create_new_model":
@@ -223,7 +248,7 @@ def main():
         save_model(model)
 
     # 预测新数据
-    predict(model, x, y)
+    predict(model, x, y, plot)
     
 
 
@@ -231,7 +256,7 @@ if __name__ == "__main__":
 
     # 请在 neural_network_run.py 中运行程序
 
-    # main()
+    # main(task_type, current_batch=1, plot)
     pass
 
     
