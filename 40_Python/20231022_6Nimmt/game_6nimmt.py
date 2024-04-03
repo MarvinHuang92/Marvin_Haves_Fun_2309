@@ -89,12 +89,12 @@ class Player():
         elif situation == 1:
             self.NN_data_1.state = (state + [situation])
 
-    def playCard(self, game):
+    def playCard(self, game, cardDeck):
         # 收集 State 信息
         self.getGameStateToNNData(game)
 
         # 选择出哪张牌
-        card, index = self.chooseCardToPlay(game)
+        card, index = self.chooseCardToPlay(game, cardDeck)
         self.handCards.pop(index)
         print("%s plays %s. (index: %d)" % (self.name, card.name, index))
         game.stash.append({"player":self, "card":card})
@@ -106,13 +106,66 @@ class Player():
             self.NN_data_0.action = -1  # 如果玩家是神经网络，用-1标记，后续不会加入样本集
 
     # 玩家思考该出哪张牌
-    def chooseCardToPlay(self, game):
+    def chooseCardToPlay(self, game, cardDeck):
         # 普通电脑
         if self.intellegence == "simple_ai":
             index = random.randint(0, game.left_round)  # 随机出一张牌
         # 高级电脑
         elif self.intellegence == "advanced_ai":
-            index = random.randint(0, game.left_round)  # 随机出一张牌
+            # 读取每行的空位数量
+            each_row_blanks = self.calcEachBlanks(game)
+            # 读取每行最后一张牌
+            each_row_last_card_value = self.calcEachRowLastCardValue(game)
+            # 读取每行的牛头总数
+            bullheads_list = self.calcEachRowBullheads(game)
+
+            # 策略：遍历手牌，计算每张手牌的预期分值
+            # 场上每行最大的牌 0       1       2       3
+            #                |       |       |       |
+            # 手牌      0   1   2   3   4   5   6   7   8   9
+            #                |       |       |       |
+            #     smallest   |safe|X |safe|X |safe|X |safe|X
+
+            handcards_dicts = []
+            for handcard in self.handCards:
+                # 计算“最小的正差值”以确定手牌会被放进哪一行
+                closest_positive_diff = 0
+                closest_row_index = 0
+                for i in range(4):
+                    diff = handcard.value - each_row_last_card_value[i]
+                    if (diff > 0) and \
+                        (not closest_row_index or (closest_row_index and (diff < closest_positive_diff))):
+                        closest_positive_diff = diff
+                        closest_row_index = i + 1
+                # 0. smallest：手牌 < min(每行最大牌)，预期分值=场上所有行的牛头最小值，
+                #    可能不止一张，预期分值小时，先出小牌，反之先出大牌（尽量搭别人便车） 
+                if not closest_row_index:
+                    handcards_dicts.append({"card": handcard, "class": "smallest", "reward": min(bullheads_list)})
+                else:
+                    # 1. safe：0 < 手牌-某行最大牌 <= 该行空位数，绝对安全，分值=0，
+                    #    组内优先级：1.手牌距离场上牌最近的 2.该行空位少的 3.先出小牌（大的那行不容易被人占）
+                    # 1A. 0 < 手牌-某行最大牌 <= 该行空位数+两者之间曾出现过的牌数量，同上（算法后续补充）
+                    if closest_positive_diff <= each_row_blanks[closest_row_index-1]:
+                        handcards_dicts.append({"card": handcard, "class": "safe", "target_row": closest_row_index, "reward": 0})
+                    # 2. X(danger)：除了上述两种，预期分值=该行已有牛头数+空格数*(手牌-该行最大牌(不含两端)之间的牛头数)/104 (暂不考虑已出现过的牌)
+                    else:
+                        reward_exp = bullheads_list[closest_row_index-1] + each_row_blanks[closest_row_index-1]*float(cardDeck.calcBullheadsBetween(each_row_last_card_value[closest_row_index-1]+1,handcard.value-1))/104
+                        handcards_dicts.append({"card": handcard, "class": "danger", "target_row": closest_row_index, "reward": reward_exp})
+            
+            self.showHandCards()
+
+            print("\n" + self.name + ": Expected reward of each handcard:")
+            for item in handcards_dicts:
+                print(item["reward"])
+            print("")
+
+            # 针对reward排序
+            handcards_dicts = sorted(handcards_dicts, key = lambda i: i["reward"])
+            # 打出reward最低的牌
+            # 可能有相同 reward 情况，当前先不考虑更细分的优先级，注释中有描述，算法后面再补充
+            card = handcards_dicts[0]["card"]
+            index = self.handCards.index(card)
+
         # 人类玩家
         elif self.intellegence == "human":
             # 最后一局，不必询问
@@ -150,14 +203,8 @@ class Player():
             ret = random.randint(1,4)
         # 高级电脑：计算每一行牛头数，收牛头最少的，如果并列，收靠前的行
         elif self.intellegence == "advanced_ai":
-            bullheads_list = []
-            for row in range(4):
-                bullheads = 0
-                for col in game.table[row]:
-                    if col:
-                        bullheads += col.bullheads
-                bullheads_list.append(bullheads)
-            # print(bullheads_list)
+            bullheads_list = self.calcEachRowBullheads(game)
+            print("\n" + self.name + ": Bullheads of each row: " + str(bullheads_list) + "\n")
             ret = bullheads_list.index(min(bullheads_list)) + 1
         # 人类玩家
         elif self.intellegence == "human":
@@ -182,7 +229,38 @@ class Player():
 
         return ret
 
-    # 神经网络计算方法
+    # 高级电脑的算法
+    def calcEachBlanks(self, game):
+        each_row_blanks = []
+        for row in range(4):
+            blanks = 0
+            for col in game.table[row]:
+                if not col:
+                    blanks += 1
+            each_row_blanks.append(blanks)
+        return each_row_blanks
+
+    def calcEachRowLastCardValue(self, game):
+        each_row_last_card_value = []
+        for row in range(4):
+            last_card_value = 0
+            for col in game.table[row]:
+                if col:
+                    last_card_value = col.value
+            each_row_last_card_value.append(last_card_value)
+        return each_row_last_card_value
+    
+    def calcEachRowBullheads(self, game):
+        bullheads_list = []
+        for row in range(4):
+            bullheads = 0
+            for col in game.table[row]:
+                if col:
+                    bullheads += col.bullheads
+            bullheads_list.append(bullheads)
+        return bullheads_list
+
+    # 神经网络的算法
     def neuronNetworkCalc(self, NN_data, action_list):
         # 提供神经网络的输入
         x_list = []
@@ -232,6 +310,34 @@ class Card():
     
     def showInfo(self):
         print("%s, Bullheads: %d" %(self.name, self.bullheads))
+
+
+# 定义“牌堆”类，继承自列表类
+class CardDeck(list):
+    def __init__(self):
+        # 创建104张牌对象
+        for i in range(1, 105):
+            exec("Card_%d = Card(%d)" %(i, i))  # 需要创建新变量时，用 exec，否则可以用 exec 或 eval
+            eval("self.append(Card_%d)" %i)
+        # 备份 “影子牌堆” 防止被打乱顺序
+        self.shadow = self[:]
+        # 常量：所有牌的牛头数 = 171
+        self.total_bullheads = self.calcBullheadsBetween(1 , 104)
+
+    # 显示牌堆顺序
+    def showCards(self):
+        cardlist = ""
+        for card in self:
+            cardlist += (str(card.value) + ", ")
+        print("CardDeck: (%s)" % cardlist.strip(", "))
+
+    # 计算任意两张牌之间的牛头数量，包含输入两端的牌
+    def calcBullheadsBetween(self, start, end):
+        bullheads = 0
+        for card in self.shadow[start-1 : end]:
+            bullheads += card.bullheads
+        return bullheads
+
 
 # 定义“游戏”类
 class Game():
@@ -327,13 +433,6 @@ class Game():
         self.left_round -= 1
 
 
-# 显示牌堆顺序
-def showLeftCards(leftCards):
-    cardlist = ""
-    for card in leftCards:
-        cardlist += (str(card.value) + ", ")
-    print("leftCards: (%s)" % cardlist.strip(", "))
-
 # 游戏主进程
 def run_game(players, random_seed, statistic):
 
@@ -341,8 +440,16 @@ def run_game(players, random_seed, statistic):
     PLAYERS = players
     # 每人手牌数 = 回合数，默认10
     HANDCARDS = 10
-    # 人类玩家数量
-    HUMAN_PLAYERS = 0
+
+    # 人类玩家列表
+    human_player_indexes = []
+    # human_player_indexes = [0]
+    # 高级电脑玩家列表
+    advanced_ai_indexes = []
+    advanced_ai_indexes = [1]
+    # 神经网络玩家列表
+    network_player_indexes = []
+    network_player_indexes = [-1]
 
     # 强制随机数种子
     # random_seed = 1
@@ -362,26 +469,22 @@ def run_game(players, random_seed, statistic):
         eval("playerList.append(P%d)" %i)
     
     # 赋予玩家不同身份
-    # 令前面的玩家是人类
-    for i in range(HUMAN_PLAYERS):
+    # 人类
+    for i in human_player_indexes:
         playerList[i].intellegence = "human"
+    # 高级电脑
+    for i in advanced_ai_indexes:
+        playerList[i].intellegence = "advanced_ai"
+    # 神经网络
+    for i in network_player_indexes:
+        playerList[i].intellegence = "network"
+        playerList[i].NN_model = load_model()
 
-    # 令最后一名玩家更智能
-    # playerList[-1].intellegence = "advanced_ai"
-
-    # 令第N名玩家拥有神经网络
-    N = 2
-    playerList[N-1].intellegence = "network"
-    playerList[N-1].NN_model = load_model()
-
-    # 创建104张牌对象
-    leftCards = []
-    for i in range(1, 105):
-        exec("Card_%d = Card(%d)" %(i, i))  # 需要创建新变量时，用 exec，否则可以用 exec 或 eval
-        eval("leftCards.append(Card_%d)" %i)
+    # 创建牌堆
+    cardDeck = CardDeck()
     
     # 显示所有牌的信息
-    # for card in leftCards:
+    # for card in cardDeck:
     #     card.showInfo()
 
     # 设置牌局随机数种子
@@ -389,12 +492,12 @@ def run_game(players, random_seed, statistic):
         random.seed(random_seed)
 
     # 洗牌
-    random.shuffle(leftCards)
+    random.shuffle(cardDeck)
 
     # 发牌
     for p in playerList:
         for i in range(game.max_round):
-            p.handCards.append(leftCards.pop(0))
+            p.handCards.append(cardDeck.pop(0))
         # 人类玩家的手牌将被排序
         if p.intellegence == "human":
             p.sortHandCards()
@@ -402,11 +505,11 @@ def run_game(players, random_seed, statistic):
 
     # 翻4张底牌
     for i in range(4):
-        game.table[i][0] = leftCards.pop(0)
+        game.table[i][0] = cardDeck.pop(0)
     game.showTable()
 
     # 显示剩余牌堆
-    showLeftCards(leftCards)
+    cardDeck.showCards()
 
     # 游戏开始
     for i in range(game.max_round):
@@ -418,7 +521,7 @@ def run_game(players, random_seed, statistic):
         # 玩家出牌，并将桌面牌型和手牌加入样本集
         for p in playerList:
             p.played_smallest = False  # 重置玩家状态
-            p.playCard(game)
+            p.playCard(game, cardDeck)
 
         # 处理缓存区：比较玩家出牌大小，并按顺序放置牌
         game.arrangeCard()
