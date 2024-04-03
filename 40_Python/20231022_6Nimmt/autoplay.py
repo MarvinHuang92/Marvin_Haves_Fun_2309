@@ -3,6 +3,7 @@
 # import game_6nimmt
 import os, sys
 import random
+import game_6nimmt
 
 
 # 定义可变长度的列表类，元素都是 int， 支持直接对列表本身进行加法运算
@@ -109,18 +110,19 @@ def autorun_game(game_num, players):
     init_random_seed = random.randint(1,10000)
     print("\nRandom seed: %d" % init_random_seed)
     
-    python_exe = "python"
-    if os.path.isdir("C:/TCC/Tools/python3/3.7.4-29_WIN64_2"):
-        python_exe = r"C:\TCC\Tools\python3\3.7.4-29_WIN64_2\python.exe"
+    # python_exe = "python"
+    # if os.path.isdir("C:/TCC/Tools/python3/3.7.4-29_WIN64_2"):
+    #     python_exe = r"C:\TCC\Tools\python3\3.7.4-29_WIN64_2\python.exe"
 
     for i in range(game_num):
+        # 随机数种子 = 初始随机种子 + 游戏局数
         print("\n==================== Start Game %d =======================" % i)
 
-        # 内部函数调用，不好用，随机数种子不会刷新
-        # game_6nimmt.run_game(logfile="game_log/game_log_%d.txt" % i, random_seed=i)
+        # 内部函数调用，速度更快
+        game_6nimmt.run_game(players, init_random_seed+i, statistic=True)
         
-        # 外部参数调用，OK，随机数种子 = 初始随机种子 + 游戏局数
-        os.system("%s game_6nimmt.py %d %d statistic > game_log\\game_log_%d.txt" % (python_exe, players, init_random_seed+i, init_random_seed+i))
+        # 外部参数调用，可以打印完整log文件
+        # os.system("%s game_6nimmt.py %d %d statistic > game_log\\game_log_%d.txt" % (python_exe, players, init_random_seed+i, init_random_seed+i))
 
         # 游戏结束
         print("\n=================== Finish Game %d =======================" % i)
@@ -130,7 +132,7 @@ def autorun_game(game_num, players):
 if __name__ == "__main__":
 
     # 连续进行局数
-    GAME_NUM = 20
+    GAME_NUM = 100
     # 玩家数量
     PLAYERS = 4
 
