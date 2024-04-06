@@ -371,15 +371,17 @@ class Card():
 
 # 定义“牌堆”类，继承自列表类
 class CardDeck(list):
-    def __init__(self):
-        # 创建104张牌对象
-        for i in range(1, 105):
+    def __init__(self, players=10):
+        # 创建104张牌对象 
+        # for i in range(1, 105):
+        # 创建"玩家数量*10+4"张牌，玩家数默认10个
+        for i in range(1, players*10+5):
             exec("Card_%d = Card(%d)" %(i, i))  # 需要创建新变量时，用 exec，否则可以用 exec 或 eval
             eval("self.append(Card_%d)" %i)
         # 备份 “影子牌堆” 防止被打乱顺序
         self.shadow = self[:]
         # 常量：所有牌的牛头数 = 171
-        self.total_bullheads = self.calcBullheadsBetween(1 , 104)
+        # self.total_bullheads = self.calcBullheadsBetween(1 , 104)
 
     # 显示牌堆顺序
     def showCards(self):
@@ -447,7 +449,7 @@ class Game():
                 self.table[row][0] = item["card"]
             # 不是最小的牌，按照规则放在正确的行
             else:
-                last_d = 104
+                last_d = 104  # 当总牌数小于104时，该算法不受影响
                 for d in diffs:
                     if 0 < d < last_d:
                         last_d = d
@@ -508,7 +510,7 @@ def run_game(players, random_seed, statistic):
     # advanced_ai_indexes = [1]
     # 神经网络玩家列表
     network_player_indexes = []
-    network_player_indexes = [-1]
+    # network_player_indexes = [-1]
 
     # 强制随机数种子
     # random_seed = 1
@@ -540,7 +542,8 @@ def run_game(players, random_seed, statistic):
         playerList[i].NN_model = load_model()
 
     # 创建牌堆
-    cardDeck = CardDeck()
+    # cardDeck = CardDeck()  # 默认情况，104张牌都发出
+    cardDeck = CardDeck(players=PLAYERS)  # 只发出和玩家数量对应的牌
     
     # 显示所有牌的信息
     # for card in cardDeck:

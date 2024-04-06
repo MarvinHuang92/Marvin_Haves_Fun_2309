@@ -136,7 +136,8 @@ def create_model():
 
     # 创建神经网络实例
     if model_type == "fitting":
-        activation_func = torch.sigmoid  # 进行 sigmoid 激活
+        # activation_func = torch.sigmoid  # 进行 sigmoid 激活
+        activation_func = torch.relu  # relu 激活，计算更快
     elif model_type == "classification":
         activation_func = torch.relu    # relu激活函数
     model = Network_2_hidden_layer(n_features, n_hidden, n_hidden_2, n_classes, activation_func)

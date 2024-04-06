@@ -39,6 +39,19 @@ class VariableLengthIntList():
     # 对list中特定的位做加法 A[index] += b
     def add_self_by_index(self, index, add_value):
         self.value[index] += add_value
+    
+    # 计算list中每个元素的百分比
+    def calc_percentage(self, total=0):
+        # 允许传入分母，如果不传入，默认用list中所有元素之和作为分母
+        if total == 0:
+            for i in self.value:
+                total += i
+        ret = []
+        for i in self.value:
+            ret.append("%.3f%%" % ((100.0*i)/total))
+        
+        return ret
+
 
 
 def game_result_statistics(csv_input, csv_output, players):
@@ -64,18 +77,22 @@ def game_result_statistics(csv_input, csv_output, players):
         bullheads = VariableLengthIntList(*line_splited)
         # add bullheads of current game into total
         total_bullheads.add_self(bullheads)
+        total_bullheads_percentage = total_bullheads.calc_percentage()
         
         # convert winner format: P1 -> 0, P2 -> 1...
         winner_index = int(winner.replace("P", "")) - 1
         # add winner into total
         wins.add_self_by_index(winner_index, 1)
         # wins.value[winner_index] += 1  # 这样也可以，但使用类自带的方法更安全
+        wins_percentage = wins.calc_percentage()
 
         game_num += 1
     
     print("\nTotal games: " + str(game_num))
-    print("Bullheads of each player: " + str(total_bullheads.value))
-    print("Win times of each player: " + str(wins.value))
+    print("Bullheads of each player: %s" % str(total_bullheads.value))
+    print("Percentage:               %s" % str(total_bullheads_percentage))
+    print("Win times of each player: %s" % str(wins.value))
+    print("Percentage:               %s" % str(wins_percentage))
 
     headers = ""
     for i in range(players):
