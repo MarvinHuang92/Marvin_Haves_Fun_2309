@@ -614,12 +614,19 @@ def run_game(players, random_seed, statistic):
     if random_seed != -1:
         game_result_filename = "game_log/autoplay/game_result_%d.txt" % random_seed
     bullhead_list = []
+    bullhead_list_noised = []
     with open(game_result_filename, "w") as f:
         for i in range(PLAYERS):
             bullhead_list.append(playerList[i].bullheads)
+            # 根据随机数种子，给牛头数增加小于1的修正值，确保有有多个玩家牛头最少时，winner能够随机分布
+            noise = 0.1 * ((random_seed % PLAYERS + i) % PLAYERS)
+            bullhead_noised = playerList[i].bullheads + noise
+            bullhead_list_noised.append(bullhead_noised)
             f.write("P%d's Bullheads: %d\n" % (i+1, bullhead_list[i]))
-        winner = bullhead_list.index(min(bullhead_list))
+        winner = bullhead_list_noised.index(min(bullhead_list_noised))
         f.write("P%s wins." % str(winner + 1))
+        # 打印修正后的牛头数值，供debug
+        f.write("\n\n# bullheads with noise:\n%s" % str(bullhead_list_noised))
         f.close()
     
     if statistic:
