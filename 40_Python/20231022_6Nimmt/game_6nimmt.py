@@ -22,16 +22,20 @@ class NNSampleData():
         # 39位：决策类型：0-出牌，1-收一整行
         self.state = []
         ### Action ###
-        # 40位：打出的手牌index（0-9）或收的行数（1-4）
-        self.action = 0
+        # （舍弃）40位：打出的手牌index（0-9）或收的行数（1-4）
+        # 40-49位：打出的手牌index
+        # 50-53位：收的行数（1-4）
+        # self.action = 0
+        self.action = [0]*14
         ### Reward ###
-        # 41位：执行动作后的分数
+        # 54位：执行动作后的分数
         self.reward = 0
         # 总表
         self.final_list = []
     
     def calcFinalList(self):
-        self.final_list = self.state + [self.action, self.reward]
+        # self.final_list = self.state + [self.action, self.reward]
+        self.final_list = self.state + self.action + [self.reward]
 
 
 # 定义玩家类
@@ -122,10 +126,13 @@ class Player():
         game.stash.append({"player":self, "card":card})
         
         # 将出牌的脚标加入 Action 样本集
+        action_list = [0]*14
+        action_list[index] = 1
+        action_list_invalid = [-1] + [0]*13
         if not self.intellegence == "network":
-            self.NN_data_0.action = index
+            self.NN_data_0.action = action_list
         else:
-            self.NN_data_0.action = -1  # 如果玩家是神经网络，用-1标记，后续不会加入样本集
+            self.NN_data_0.action = action_list_invalid  # 如果玩家是神经网络，用-1标记，后续不会加入样本集
         
         # 记录 Reward 样本集
         self.NN_data_0.reward = handcards_dicts[index]["reward"]
@@ -169,7 +176,7 @@ class Player():
             # 列出所有可能的action
             action_list = []
             for i in range(len(self.handCards)):
-                action_list.append(i)  # 手牌的脚标
+                action_list.append(i)  # 手牌的脚标，0-9
             # 计算最优 action
             index = self.neuronNetworkCalc(self.NN_data_0, action_list)
         
@@ -200,20 +207,24 @@ class Player():
                 a = input("%s: You played a smallest card! (%s) Please choose a row to clean... (1,2,3,4)" % (self.name, card.name))
                 for r in range(1,5):
                     if str(r) == a:
-                        self.NN_data_1.action = r  # 更新 Action 样本集
-                        return r
+                        ret = r
+                        break
         # 神经网络
         elif self.intellegence == "network":
             # 列出所有可能的action
-            action_list = [1,2,3,4]  # 要收牌的行号，注意从1开始
+            # action_list = [1,2,3,4]  # 要收牌的行号，注意从1开始
+            action_list = [10,11,12,13]  # 要收牌的行号，1-4行对应 action 脚标 10-13
             # 计算最优 action，注意结果也要+1
             ret = self.neuronNetworkCalc(self.NN_data_1, action_list) + 1
         
         # 更新 Action 样本集
+        action_list = [0]*14
+        action_list[10+ret-1] = 1
+        action_list_invalid = [-1] + [0]*13
         if not self.intellegence == "network":
-            self.NN_data_1.action = ret
+            self.NN_data_1.action = action_list
         else:
-            self.NN_data_1.action = -1  # 如果玩家是神经网络，用-1标记，后续不会加入样本集
+            self.NN_data_1.action = action_list_invalid  # 如果玩家是神经网络，用-1标记，后续不会加入样本集
 
         # 记录 Reward 样本集
         self.NN_data_1.reward = bullheads_list[ret - 1]
@@ -323,11 +334,18 @@ class Player():
         x_list = []
         s_i = list(NN_data.state)  # 当前state信息
         # print(s_i)
-        for a in action_list:
-            x_i = s_i + [a]  # x_i = state + 每种可能的action
+        # a_list = []
+        for a in action_list:  # 这里的a是真正的action_list的脚标
+            real_action_list = [0]*14
+            real_action_list[a] = 1
+            x_i = s_i + real_action_list  # x_i = state + 每种可能的action
             x_list.append(x_i)
+            # a_list.append(real_action_list)
         x = torch.Tensor(x_list)  # 将x由二维list转为二维张量
         # print(x)
+
+        # 显示所有可能action的向量形式
+        # print("\n" + self.name + "'s possible actions:\n" + str(a_list[:]) + "\n")
 
         # 使用 model 预测结果 h, 表示每一种action对应的预测reward
         h = self.NN_model(x).data   #.data()可以提取张量部分，舍弃梯度函数部分
@@ -592,13 +610,20 @@ def run_game(players, random_seed, statistic):
         for p in playerList:
             p.showPenaltyCards()
             # 生成当前回合，当前玩家的训练样本集
-            if not p.NN_data_0.action == -1:  # 神经网络玩家的动作，不加入样本
+            # if not p.NN_data_0.action == -1:  # 神经网络玩家的动作，不加入样本
+            if not p.NN_data_0.action[0] == -1:  # 神经网络玩家的动作，不加入样本
                 p.NN_data_0.calcFinalList()
                 # 将当前回合的样本加入总样本集，最后统一打印
-                NN_Sample_Data.append(str(p.NN_data_0.final_list).strip("[").strip("]") + "\n")
-            if (not p.NN_data_1.action == -1) and p.played_smallest:  # 如果本回合打出了最小牌
+                sample_data = str(p.NN_data_0.final_list).strip("[").strip("]")
+                NN_Sample_Data.append(sample_data + "\n")
+                # print(sample_data)
+
+            # if (not p.NN_data_1.action == -1) and p.played_smallest:  # 如果本回合打出了最小牌
+            if (not p.NN_data_1.action[0] == -1) and p.played_smallest:  # 如果本回合打出了最小牌
                 p.NN_data_1.calcFinalList()
-                NN_Sample_Data.append(str(p.NN_data_1.final_list).strip("[").strip("]") + "\n")
+                sample_data = str(p.NN_data_1.final_list).strip("[").strip("]")
+                NN_Sample_Data.append(sample_data + "\n")
+                # print(sample_data)
 
         # 游戏剩余回合数-1
         game.leftRoundDecrement()
@@ -649,7 +674,7 @@ def run_game(players, random_seed, statistic):
     # csv_headers = "Table11,,,,,,,,,,Table21,,,,,,,,,,Table31,,,,,,,,,,Table41,,,,,,,,,,\
     #     HandCard0,,,,,,,,,,,,,,,,,,HandCard9,,leftHandCard,CurrBullheads,Situation,Action,Reward"
     csv_headers = "HandCard0,,,,,,,,,,,,,,,,,,HandCard9,,BlanksRow1,,,BlanksRow4,LastCardRow1,,,,,,LastCardRow4,,\
-        BullheadsRow1,,,BullheadsRow4,Players,leftHandCard,CurrBullheads,Situation,Action,Reward"
+        BullheadsRow1,,,BullheadsRow4,Players,leftHandCard,CurrBullheads,Situation,Action0,,,,,,,,,Action9,ChooseRow1,,,ChooseRow4,Reward"
     with open(nn_sample_data_filename, "w") as f:
         f.write(csv_headers + "\n")
         f.writelines(NN_Sample_Data)
