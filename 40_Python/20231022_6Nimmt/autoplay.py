@@ -94,9 +94,9 @@ def game_result_statistics(csv_input, csv_output, players):
         f.close()
 
 def init_record_folder(game_log_folder, game_result_stat_path, players):
-    os.system("if not exist %s md %s" % (game_log_folder, game_log_folder))
-    os.system("del %s\\*.txt" % game_log_folder)
-    os.system("del %s\\nn_sample_data*" % game_log_folder)
+    os.system("if not exist %s\\autoplay md %s\\autoplay" % (game_log_folder, game_log_folder))
+    os.system("del %s\\autoplay\\*.txt" % game_log_folder)
+    os.system("del %s\\autoplay\\nn_sample_data*" % game_log_folder)
     with open(game_result_stat_path, "w") as f:
         f.write("Game_id,")
         for a in range(players):
@@ -106,8 +106,8 @@ def init_record_folder(game_log_folder, game_result_stat_path, players):
 
 def autorun_game(game_num, players):
     
-    # 初始随机种子：10000以内正整数
-    init_random_seed = random.randint(1,10000)
+    # 初始随机种子：100000以内正整数
+    init_random_seed = random.randint(1,100000)
     print("\nRandom seed: %d" % init_random_seed)
     
     # python_exe = "python"
@@ -122,7 +122,7 @@ def autorun_game(game_num, players):
         game_6nimmt.run_game(players, init_random_seed+i, statistic=True)
         
         # 外部参数调用，可以打印完整log文件
-        # os.system("%s game_6nimmt.py %d %d statistic > game_log\\game_log_%d.txt" % (python_exe, players, init_random_seed+i, init_random_seed+i))
+        # os.system("%s game_6nimmt.py %d %d statistic > game_log\\autoplay\\game_log_%d.txt" % (python_exe, players, init_random_seed+i, init_random_seed+i))
 
         # 游戏结束
         print("\n=================== Finish Game %d =======================" % i)
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     # 连续进行局数
     GAME_NUM = 100
     # 玩家数量
-    PLAYERS = 4
+    PLAYERS = 2
 
     # 游戏结果的保存位置
     game_log_folder = "game_log"

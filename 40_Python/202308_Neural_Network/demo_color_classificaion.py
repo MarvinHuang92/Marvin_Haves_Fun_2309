@@ -25,7 +25,7 @@ def make_data(num):
 
 
 # 定义神经网络类
-from neural_network_template import Network, softmax_epoch
+from neural_network_template import Network, Network_2_hidden_layer, softmax_epoch
 
 # 绘制决策边界的函数
 def draw_decision_boundary(minx1, maxx1, minx2, maxx2, resolution, model):
@@ -97,7 +97,8 @@ if __name__ == "__main__":
     # ]
 
     # 创建神经网络实例
-    model = Network(n_features, n_hidden, n_classes, torch.relu)  # relu激活函数
+    # model = Network(n_features, n_hidden, n_classes, torch.relu)  # relu激活函数
+    model = Network_2_hidden_layer(n_features, n_hidden, 3, n_classes, torch.relu)  # relu激活函数
     # 定义损失计算规则
     criterion = nn.CrossEntropyLoss()  # 交叉熵损失函数
     # Adam 优化器

@@ -22,7 +22,7 @@ from neural_network_run import *
 
 # 定义神经网络类，和一些辅助函数
 sys.path.append("../202308_Neural_Network")  # 跨目录引用模块，先将所在目录添加至系统路径
-from neural_network_template import Network, softmax_epoch, calcMSE, plot_3d_figure
+from neural_network_template import Network, Network_2_hidden_layer, softmax_epoch, calcMSE, plot_3d_figure
 
 
 # 样本区间初始化
@@ -63,7 +63,7 @@ def get_data(plot):
         for i in range(input_col_max):
             x_i.append(int(line[i].strip()))
         x.append(x_i)
-        y.append([int(line[-1].strip())])
+        y.append([float(line[-1].strip())])
     # print(x)
     # print(y)
         
@@ -139,7 +139,7 @@ def create_model():
         activation_func = torch.sigmoid  # 进行 sigmoid 激活
     elif model_type == "classification":
         activation_func = torch.relu    # relu激活函数
-    model = Network(n_features, n_hidden, n_classes, activation_func)
+    model = Network_2_hidden_layer(n_features, n_hidden, n_hidden_2, n_classes, activation_func)
 
     return model
 

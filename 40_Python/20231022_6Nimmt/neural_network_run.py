@@ -16,10 +16,10 @@ plot = True     # 是否显示拟合图像
 
 # 样本参数
 csv_input = "game_log/02_nn_sample_data_full.csv"
-input_col_max = 64  # x的维数，最大值64
+input_col_max = 41  # x的维数，最大值64 -> 41
 
 sample_start_tr = 0   # 训练样本起点，最小为0
-batchsize_tr = 500    # 训练时每组样本数
+batchsize_tr = 1000    # 训练时每组样本数
 
 # sample_start_pr = 0   # 测试样本起点，最小为0
 sample_start_pr = sample_start_tr + batchsize_tr * training_batch
@@ -29,7 +29,8 @@ batchsize_pr = 100    # 测试时每组样本数
 # 模型参数
 model_path = 'model.pth'
 n_features = input_col_max  # 特征数（输入神经元数量，对应样本的维数）
-n_hidden = 500              # 隐藏神经元数量
+n_hidden = 80              # 隐藏神经元数量
+n_hidden_2 = 20            # 隐藏神经元数量
 # 输出神经元数量，拟合问题：1个，分类问题：2个（类别数量）
 if model_type == "fitting":
     n_classes = 1
