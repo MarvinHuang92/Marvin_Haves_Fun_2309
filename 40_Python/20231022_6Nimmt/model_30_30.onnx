@@ -1,4 +1,4 @@
-pytorch1.13.1:å¿
+pytorch1.13.1:€¬
 û
 onnx::MatMul_0
 onnx::MatMul_18/layer1/MatMul_output_0/layer1/MatMul"MatMul2…C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\linear.py(114): forward
@@ -16,8 +16,8 @@ C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987)
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(236): model_visualization
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(248): main
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(257): main
 c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
 
 ö
@@ -37,8 +37,8 @@ C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987)
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(236): model_visualization
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(248): main
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(257): main
 c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
 
 —
@@ -54,8 +54,8 @@ C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987)
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(236): model_visualization
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(248): main
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(257): main
 c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
 
 û
@@ -75,8 +75,8 @@ C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987)
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(236): model_visualization
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(248): main
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(257): main
 c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
 
 ö
@@ -96,8 +96,8 @@ C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987)
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(236): model_visualization
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(248): main
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(257): main
 c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
 
 ’
@@ -113,8 +113,8 @@ C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987)
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(236): model_visualization
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(248): main
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(257): main
 c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
 
 †
@@ -134,8 +134,8 @@ C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987)
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(236): model_visualization
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(248): main
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(257): main
 c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
 
 à
@@ -155,8 +155,8 @@ C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987)
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
 C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(236): model_visualization
-c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(248): main
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(257): main
 c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
 	torch_jit*ãBlayer1.biasJx˛»ª=ÈØ£=á–ë=ª(t>⁄ ¿=‡'À=HçIºb°µ>ÎèÏΩF	æ2˘XæÜ„o=™…>˘"%>Ç$®Ωía=!jrΩu{=™ê?”Ïæ¬˚@æ˙t>»Ô9>¶X>]âæ¶Ü>%\º9ö>®+æI–»æ*ãBlayer2.biasJxôÑæÌ ¸ΩyëÂ>ÕÙ∏=Yæ6tâ>MâM=yâî>÷Œ˙∫ñOæˇmâΩ«ÿÓº<Ωƒº	©»ΩÜ√îΩ⁄πùΩ˜%sæÖõ∆Ω$,à=√M‚æÉÖZªW+>Dêÿ=f¢Ö=≈˘˘æÀ*æ»2>g∆á>:íôºx,Ω*Blayer3.biasJ¿ÃaΩ*Í26Bonnx::MatMul_18J–2t{Ωˇnè;"€®<Õ+>˝òµΩ¥Õº˝IEºüúΩ¯ ãΩ®(Ω˙ûÚ;«»QΩçg=∑ìΩ∞ΩP=T∞=ﬁÚ‹=pÁ6æ©∑	Ω
 W2æ¬Å≠<I}Æ=áÇ>ˆ0ªÇOÎ=ì= aºÛŒ`æ≈È°;cÁ|º»ﬂ>∑ƒæ#Œ>5¸æﬂªÇ◊ª†uæ®$Ωª2(æ}^=óÓõ=ıev=9√ÿΩj¡=E=7Ω#ÍJ<g!>1G>‰É=PÛ=≤·Ç=Xåâ>€eæñEçæºlI=Ë=´^Ú=Û≤zΩÔ‰`= …=M›äæIücΩÛg æ˝f=D(¡Ω7æ=„h<íÉ⁄=‹ÑºùÅT=sŸΩKË=À=ôìêΩ˚Pº≠⁄^=*”P=§	>v=¡¬ëºòó=›Ç=Ë¬ÕΩﬂõN=úÊ>ÌåˇΩï≈Òº√∞æ”é∫¢›?sSﬁºÁ71?\å–æ3∆£=jZΩ=ÅoæÌ>´O>£„>∞ä≤æ-º|Ω%£É>9Gv>ßgS=öê>{πæ Îô>“\;?2h1=±”Ω1>Ö>P>¯˜ØæÈ,¢æµ2˘>:|ÓΩu-√=ÅûyΩêï¨<ÀΩ`=óT >2k=r%Cæñ¶Ω~–ãΩâ,æÊgΩ—Â<’< &ºT øΩƒy£=êÌ*ªù∑=@ZæXö≤Ω4œlΩÖ%Ω9Ö<ˆØ2Ω=ü¶ºK√ =‰˙æ∞æ,‚õΩA˛=ïÕòº	íºÑÔË; ) >	¿¨æ?Ú∑ΩÃoı>°ƒæ:ãæëÙæ?∫/>ıëÖΩ@Øƒ;4ΩVÇæ¢ıÇΩzéë=etæ<
@@ -214,6 +214,48 @@ Dó=≥{8æa&6<uU∆æÙÍ*æ9ë=®,?=¿Lø?T⁄æ´qæ»fø”I >Î\ïæ[èΩ>ÿ>5æZ˙-ø'u<#ƒ˜øG4éøûy◊æ›
 
 6b
 17
+
+
+
+
+j1
+/layer1/MatMul_output_0
+
+
+
+
+j.
+/layer1/Add_output_0
+
+
+
+
+j(
+/Relu_output_0
+
+
+
+
+j1
+/layer2/MatMul_output_0
+
+
+
+
+j.
+/layer2/Add_output_0
+
+
+
+
+j*
+/Relu_1_output_0
+
+
+
+
+j1
+/layer3/MatMul_output_0
 
 
 

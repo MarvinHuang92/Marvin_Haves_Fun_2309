@@ -3,7 +3,7 @@ import torch
 from torch import nn
 import matplotlib.pyplot as plt
 from math import sqrt
-# import numpy as np
+import numpy as np
 # import random
 
 """
@@ -233,12 +233,29 @@ def model_visualization(model):
         dummy_input = torch.randn(n_classes, n_hidden_3, n_hidden_2, n_hidden, input_col_max)
 
     # 将模型导出为 ONNX 格式
-    torch.onnx.export(model, dummy_input, 'model.onnx', verbose=True)
+    path = 'model.onnx'
+    torch.onnx.export(model, dummy_input, path, verbose=True)
+
+    # 添加shape信息
+    import onnx
+    from onnx import shape_inference
+    onnx.save(onnx.shape_inference.infer_shapes(onnx.load(path)), path)
+
+    # 打印模型参数(权重，偏置)
+    # 显示训练好的模型参数，不受onnx的随机初始化影响
+    for param_tensor in model.state_dict():
+        np.set_printoptions(suppress=True)
+        print(param_tensor, "\n", model.state_dict()[param_tensor].numpy())
+    # 统计参数数量
+    params = sum([np.prod(p.size()) for p in model.parameters()])
+    print("\nTotal parameters: %d" % params)
     
-    # 在浏览器中打开导出的 ONNX 模型文件
-    # 如果自动打开网页，手动访问 https://netron.app/ 亦可
-    import netron
-    netron.start('model.onnx')
+    # 在浏览器中打开导出的 ONNX 模型文件。不建议，会让terminal卡住
+    # import netron
+    # netron.start('model.onnx')
+
+    # 如果不能自动打开网页，手动访问 https://netron.app/ 亦可
+    print('\nONNX model saved as: "%s", please goto "https://netron.app/" to view the model.\n' % path)
 
 
 

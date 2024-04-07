@@ -55,8 +55,8 @@ n_print_loss = 200          # 每迭代n次，打印当前损失
 # 运行模型
 if __name__ == "__main__":
     import neural_network_6nimmt as nn6
-    
-    if not batch_training:
+
+    if not batch_training or task_type == "model_visualization":
         training_batch = 1
     
     # 新模型批量训练时，仅第一次创建模型，之后加载上一次保存的模型
