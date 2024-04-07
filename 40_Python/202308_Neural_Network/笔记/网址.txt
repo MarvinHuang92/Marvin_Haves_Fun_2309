@@ -22,7 +22,13 @@ https://blog.csdn.net/ft_sunshine/article/details/90221691
 https://zhuanlan.zhihu.com/p/395323930
 
 
-多项式拟合
+=====================================================================
+
+神经网络，分类问题（查漏补缺）
+https://zhuanlan.zhihu.com/p/661307621
+
+
+神经网络，多项式拟合
 https://zhuanlan.zhihu.com/p/689187479
 
 https://zhuanlan.zhihu.com/p/138080482
@@ -34,6 +40,12 @@ https://www.zhihu.com/question/61986703
 https://fanyi.baidu.com/mtpe-individual/multimodal#/
 
 
+卷积神经网络 CNN
+https://zhuanlan.zhihu.com/p/291939171
+
+https://zhuanlan.zhihu.com/p/29946059
+
+https://zhuanlan.zhihu.com/p/50422814
 
 
 斯坦福课程笔记（来自 github 用户）
@@ -59,3 +71,5 @@ https://datawhalechina.github.io/thorough-pytorch/%E7%AC%AC%E4%B8%83%E7%AB%A0/7.
 https://blog.csdn.net/Wenyuanbo/article/details/118736258
 
 https://blog.csdn.net/Wenyuanbo/article/details/118765044
+
+
