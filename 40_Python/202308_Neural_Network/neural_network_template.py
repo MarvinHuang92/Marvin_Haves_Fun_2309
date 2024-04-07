@@ -37,7 +37,7 @@ class Network_2_hidden_layer(nn.Module):
         super().__init__()  # 首先调用父类的初始化函数
         # 使用传入的激活函数类型 - 解决不同问题，使用的激活函数也不同
         self.activation_func = activation_func
-        # 然后新增步骤，创建两个线性层
+        # 然后新增步骤，创建3个线性层
         self.layer1 = nn.Linear(n_in, n_hidden_1)
         self.layer2 = nn.Linear(n_hidden_1, n_hidden_2)
         self.layer3 = nn.Linear(n_hidden_2, n_out)
@@ -50,6 +50,30 @@ class Network_2_hidden_layer(nn.Module):
         x = self.activation_func(x)  # 调用激活函数
         return self.layer3(x)  # 返回 layer3 结果
 
+
+class Network_3_hidden_layer(nn.Module):
+    # 重载初始化函数（构造函数）
+    # 传入参数：输入层，隐藏层，输出层
+    def __init__(self, n_in, n_hidden_1, n_hidden_2, n_hidden_3, n_out, activation_func):
+        super().__init__()  # 首先调用父类的初始化函数
+        # 使用传入的激活函数类型 - 解决不同问题，使用的激活函数也不同
+        self.activation_func = activation_func
+        # 然后新增步骤，创建4个线性层
+        self.layer1 = nn.Linear(n_in, n_hidden_1)
+        self.layer2 = nn.Linear(n_hidden_1, n_hidden_2)
+        self.layer3 = nn.Linear(n_hidden_2, n_hidden_3)
+        self.layer4 = nn.Linear(n_hidden_3, n_out)
+
+    # 定义前向传播
+    def forward(self, x):
+        x = self.layer1(x)  # 计算 layer1 结果
+        x = self.activation_func(x)  # 调用激活函数
+        x = self.layer2(x)  # 计算 layer2 结果
+        x = self.activation_func(x)  # 调用激活函数
+        x = self.layer3(x)  # 计算 layer3 结果
+        x = self.activation_func(x)  # 调用激活函数
+        return self.layer4(x)  # 返回 layer4 结果
+    
 
 # 训练模型 - softmax 回归模型的循环迭代
 def softmax_epoch(x, y, network, criterion, optimizer, n_epochs, n_print_loss):

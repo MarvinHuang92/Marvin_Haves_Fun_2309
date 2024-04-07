@@ -4,9 +4,10 @@
 model_type = "fitting"         # 函数拟合问题，输出连续值
 # model_type = "classification"  # 二分类问题，输出离散值 [0,1] 二选一
 
-# task_type = "training_new_model"       # 创建新模型，重新开始训练（学习速率*10）
+task_type = "training_new_model"       # 创建新模型，重新开始训练（学习速率*10）
 # task_type = "training_existing_model"  # 加载模型，继续训练
 task_type = "prediction"               # 加载模型，跳过训练，直接进行预测
+# task_type = "model_visualization"       # 模型可视化
 
 batch_training = True   # 是否自动进行多组训练
 training_batch = 4      # 训练组数
@@ -23,14 +24,16 @@ batchsize_tr = 8000    # 训练时每组样本数
 
 # sample_start_pr = 0   # 测试样本起点，最小为0
 sample_start_pr = sample_start_tr + batchsize_tr * training_batch
-batchsize_pr = 100    # 测试时每组样本数
+batchsize_pr = 1000    # 测试时每组样本数
 
 
 # 模型参数
 model_path = 'model.pth'
 n_features = input_col_max  # 特征数（输入神经元数量，对应样本的维数）
-n_hidden = 120              # 隐藏神经元数量
-n_hidden_2 = 60            # 隐藏神经元数量
+hidden_layers = 2          # 隐藏层数量
+n_hidden = 30              # 隐藏神经元数量
+n_hidden_2 = 30            # 隐藏神经元数量
+# n_hidden_3 = 30            # 隐藏神经元数量
 # 输出神经元数量，拟合问题：1个，分类问题：2个（类别数量）
 if model_type == "fitting":
     n_classes = 1

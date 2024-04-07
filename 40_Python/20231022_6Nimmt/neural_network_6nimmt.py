@@ -22,7 +22,7 @@ from neural_network_run import *
 
 # 定义神经网络类，和一些辅助函数
 sys.path.append("../202308_Neural_Network")  # 跨目录引用模块，先将所在目录添加至系统路径
-from neural_network_template import Network, Network_2_hidden_layer, softmax_epoch, calcMSE, plot_3d_figure
+from neural_network_template import Network, Network_2_hidden_layer, Network_3_hidden_layer, softmax_epoch, calcMSE, plot_3d_figure
 
 
 # 样本区间初始化
@@ -140,7 +140,13 @@ def create_model():
         activation_func = torch.relu  # relu 激活，计算更快
     elif model_type == "classification":
         activation_func = torch.relu    # relu激活函数
-    model = Network_2_hidden_layer(n_features, n_hidden, n_hidden_2, n_classes, activation_func)
+    
+    if hidden_layers == 1:
+        model = Network(n_features, n_hidden, n_classes, activation_func)
+    if hidden_layers == 2:
+        model = Network_2_hidden_layer(n_features, n_hidden, n_hidden_2, n_classes, activation_func)
+    if hidden_layers == 3:
+        model = Network_3_hidden_layer(n_features, n_hidden, n_hidden_2, n_hidden_3, n_classes, activation_func)
 
     return model
 
@@ -215,10 +221,33 @@ def predict(model, x, y, plot):
         # plt.scatter(sample_index_range, y-h, color="blue")
         plt.show()
 
+# 模型参数可视化
+def model_visualization(model):
+    
+    # 随机化初始参数，维数从output向input反着写
+    if hidden_layers == 1:
+        dummy_input = torch.randn(n_classes, n_hidden, input_col_max)
+    if hidden_layers == 2:
+        dummy_input = torch.randn(n_classes, n_hidden_2, n_hidden, input_col_max)
+    if hidden_layers == 3:
+        dummy_input = torch.randn(n_classes, n_hidden_3, n_hidden_2, n_hidden, input_col_max)
+
+    # 将模型导出为 ONNX 格式
+    torch.onnx.export(model, dummy_input, 'model.onnx', verbose=True)
+    
+    # 在浏览器中打开导出的 ONNX 模型文件
+    # 如果自动打开网页，手动访问 https://netron.app/ 亦可
+    import netron
+    netron.start('model.onnx')
+
+
 
 def main(task_type, current_batch, plot):
     # 判断任务类型
-    if task_type == "training_new_model":
+    if task_type == "model_visualization":
+        model_visualization(load_model())
+        return 0
+    elif task_type == "training_new_model":
         model_input = "create_new_model"
         training_model_switch = True
     elif task_type == "training_existing_model":

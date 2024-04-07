@@ -149,7 +149,7 @@ def autorun_game(game_num, players):
 if __name__ == "__main__":
 
     # 连续进行局数
-    GAME_NUM = 100
+    GAME_NUM = 3000
     # 玩家数量
     PLAYERS = 2
 

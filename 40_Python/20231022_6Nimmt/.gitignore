@@ -1,1 +1,2 @@
 game_log/*
+!game_log/02_nn_sample_data_full.csv
