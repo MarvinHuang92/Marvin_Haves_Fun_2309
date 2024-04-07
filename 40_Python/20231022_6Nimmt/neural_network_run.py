@@ -30,9 +30,9 @@ batchsize_pr = 1000    # 测试时每组样本数
 # 模型参数
 model_path = 'model.pth'
 n_features = input_col_max  # 特征数（输入神经元数量，对应样本的维数）
-hidden_layers = 2          # 隐藏层数量
-n_hidden = 30              # 隐藏神经元数量
-n_hidden_2 = 30            # 隐藏神经元数量
+hidden_layers = 1          # 隐藏层数量
+n_hidden = 12              # 隐藏神经元数量
+# n_hidden_2 = 30            # 隐藏神经元数量
 # n_hidden_3 = 30            # 隐藏神经元数量
 # 输出神经元数量，拟合问题：1个，分类问题：2个（类别数量）
 if model_type == "fitting":

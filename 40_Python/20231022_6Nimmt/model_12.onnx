@@ -1,0 +1,140 @@
+pytorch1.13.1:ü\
+û
+onnx::MatMul_0
+onnx::MatMul_12/layer1/MatMul_output_0/layer1/MatMul"MatMul2…C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1182): _slow_forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+../202308_Neural_Network\neural_network_template.py(28): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1182): _slow_forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(132): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(896): _trace_and_get_graph_from_model
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(265): main
+c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
+
+ö
+layer1.bias
+/layer1/MatMul_output_0/layer1/Add_output_0/layer1/Add"Add2…C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1182): _slow_forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+../202308_Neural_Network\neural_network_template.py(28): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1182): _slow_forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(132): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(896): _trace_and_get_graph_from_model
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(265): main
+c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
+
+—
+/layer1/Add_output_0/Relu_output_0/Relu"Relu2õ../202308_Neural_Network\neural_network_template.py(29): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1182): _slow_forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(132): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(896): _trace_and_get_graph_from_model
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(265): main
+c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
+
+û
+/Relu_output_0
+onnx::MatMul_13/layer2/MatMul_output_0/layer2/MatMul"MatMul2…C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1182): _slow_forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+../202308_Neural_Network\neural_network_template.py(30): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1182): _slow_forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(132): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(896): _trace_and_get_graph_from_model
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(265): main
+c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
+
+à
+layer2.bias
+/layer2/MatMul_output_011/layer2/Add"Add2…C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\linear.py(114): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1182): _slow_forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+../202308_Neural_Network\neural_network_template.py(30): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1182): _slow_forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(118): wrapper
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(132): forward
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\nn\modules\module.py(1194): _call_impl
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\jit\_trace.py(1184): _get_trace_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(896): _trace_and_get_graph_from_model
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(987): _create_jit_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1111): _model_to_graph
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(1539): _export
+C:\TCC\Tools\python3\3.7.4-29_WIN64_2\lib\site-packages\torch\onnx\utils.py(519): export
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(237): model_visualization
+c:\Repo\Marvin_Haves_Fun_2309\40_Python\20231022_6Nimmt\neural_network_6nimmt.py(265): main
+c:/Repo/Marvin_Haves_Fun_2309/40_Python/20231022_6Nimmt/neural_network_run.py(75): <module>
+	torch_jit*CBlayer1.biasJ0uFø_D>≤Ÿ¸º;´>dÉ>&>æs-ÖΩo∫æ∫Ë∂>r*ø•õ∏ænÒ2æ*Blayer2.biasJÌ≥9ø*∫6Bonnx::MatMul_12J†G˘ÄªˇnÈº√ÎΩTW©ºˇUΩÓ/>√ò%ΩÅ˘ªfUÃ<∂±?º*o∞ºE>˜´ æ0=•-“ºL›æ≤<so:ΩLµ>©—¨Ω2≤!Ω@›x=&’ÉΩÀì=∏÷=U‘.;1<™º|={d=‘›óºSÉÁ=08<«˚5Ω–Ωs	9>◊)i;¥îB=K=‰Ø,=¶32Ωéä=FŸï>"UÅømïΩ∑√≈Ω¿vØªÏ¥mΩ´QyønxYºÕªŒÁ¢:_õ∏=H´aºÎ±Ä;É∏?>{¶Ø;˚8ûΩUw<Gî—<ÔºíJ;jâVΩ
+÷ΩMãÄ>¢NoæUY⁄æÓt»æ˙≠ôπº=çæƒ`>0∆æ~´≠<GÅ∂<^Pä;ÉY<'¸PºHmÔ<.vïæﬁÊ˜=¬HG;Oæ(=’Ãºilê<¬»J=¿£Ω„Ω”€üΩ^ƒ†ºÆ~æ‹o	¿Ò€}Ω5≤;vßä<u~>úKZ>°¬PæÛ&5ºshç:ã∂≈;æ#<xLQ<8–>3U=R¥ ªíª†;ƒ;Oô∞ΩfX6ºãT;‹!Ωª<è˛Ω)R∑=Væ’Ω√‡Ç>ƒ∆≠>Îf=m<ºÛ; <bi–>∫åÊæu"√<Ã@Ü;NN<ËΩ
+ø6=ëhΩæëÜΩó≠ºï…‘;_ÚÂºËÃøNv%=9ûΩí·=!˝	>éÖ¢=êÖ<ﬁ?/?…Ò!ø˛ÀΩ–CﬂΩÍ!	>ÀÊ◊>~T<å~;•gb<¬é’9k-ÑºπÉÒ<¨¿;Y
+◊=ñ¬=º”GÉ;ãÚºéˆπæKêæ*Q∑Ωh7ƒΩ≥¥ÅΩÜ$ç<®*äæpøvd˛æ3AÉ<€‘JΩ«Ã=Œ`1ø
+xãæ_<;^√º≠GºõOº*} ;qs…=bìåæ)◊§º'ÛBº≤¿ºåk@>sÖáæπ∏Ω€Îì=èÁ=°zó=ÛÄœº‹!=Z6ˇΩB/f=<9
+=‹<Ω=5Puø¥˛†æÊ%.ªD≥s<Lı™;ê¶y<œ¿º<ÊΩ3iıΩ˛3_<é<c´<÷âvæ5$N=œî∞Ω˜“Wæ0Å∏æëÂπΩ©9âæ˚OSøbrΩ¸≤˚ΩÆü¡Ω/>J=JÂ˚æU}ÁΩEÃræ›9»æ≤{ﬁæ¸<khÓª£ï‡Ωb∑ﬁ<€~d=ƒΩ‰=ìﬁΩÁ»ô>r>Õcíæ˘` øªn*?ûÉ'=•Éæ∫~>é‰í=åjºÙ<=‡ÈáΩµæˆ’íæ…Ïƒ=</æ@™)æ¡Fæ¿o±=•ç™=ü±èæ¯“êΩÃæˆëúæqãæ5≤æ—+>Vü¶;hˇôΩŸÚÉæN>íèWæÒæ˚@óº¬lä=Y »Ωl‹ƒæ•ÿÊ=eÁΩbáéΩï≈ﬁΩ@’?>ê‘æ—A7æE+>¨Ø>◊ÜàΩXÇÈ=p-≠=”k¯Ωxm:='èU=Ú)àΩˇø=˛O›ΩdÉñæF.ø,ÎÃ=’æ≈ä>(5$æù¡ê=¸¨ΩL´ãºTTÇºpE	Ω·ÕiΩWhæE	Yæ(Wa<´ç=ÀπÛ<‚<€Ωu{ØΩ_+=<†˝ºv◊ΩP∞SæØ[ÃΩQs=>æÿ]ΩÕû#>íÖÂ:¨O≠=œbµæ§•<‡°ªt”ÿ;SGëª°h°;p%æ“õ7æG˝œ<i=˚4º$T–Ω¸Ù∑=´©‚Ω[ÆΩÁ¬N=ÀÚrΩ.¸yºt£€ºøpªJî°º3Ôå=¸Ãì;Á>@ø€]’º”Ä∆ª¬ó'9ˆåè<§AYΩË”.ΩÿÒæAT)<®<íÊ=53fΩƒçæ∂◊ºi`t=@3∆=ë™‚=§>ø=âpcΩêõcΩ·YòΩæéAæŸpºÙÉÇ=Áf¡æáÄºH©>;ÁÛ<ëÛºöOj<_óΩØP3æµØáªi‚='Q‚ªœ¸öæ'=æËí‚ºàÑçΩ`xºâb4<o‚ôΩÈÒ≈ΩÚR¿æƒÆ<6[›<«—{Ωc3Ú=Ì8…æÉ>É◊Ïæ–]vª&Hs>L^Ì=cBô>œ•≥æøíºD÷Äæ•q<æÒÔÔ<CA->¨”ˆΩh#µ=˚eø®Qﬁ<#∂[=⁄¸ç>‘5”>–|ãΩÓ_ºΩçÇ¥=B•”=T»Ìæ"Tò<8Ÿ>=Í€<V4f?òDΩ=»qæñÒ=¿UG?Œ1?LUÜΩ^à–=Ë%?¸◊ù>Áf±=Æ)^>å9MægÆæüs>|7—>≠”dæaWPΩ∆™>Ø∞◊>ÄΩ>=Ë'øˆ«º˙»8>÷Yº>ﬁ∂
+>ü≥<æíö¨ΩÇ†≤æõ™>¸Føƒ◊Ωæ]∫0æ˚°Ω”«çΩ°yR=π∆Àªæ¨æÙí≤ΩáKäæ≤]>M!>ˆìï=¸‘?>™∫[>3Í°<
+≥ªvü<∞A|=ér˛;
+sÄ<O6è:›/=Ä5ΩºFªüÌû:¯A0ªâ∏V<’õ”?∏Ph?sñølŸ®>veêøÃSH=ÄéEøú}R?ä<&@À ¿æ&≤øæˇ-øBV%={‘_=E˚ûæΩ`'ø∂ß@Êii?l¬5>˝´}?O¿¿çØª©Oˇ?ˆÇ:?‡zÄæfê?ëSÇ>¥ÚÃ>˝eJ¿í'>?¸æπB‚æ¡ ˘ø2¸V@ΩB®øΩR÷ø∆«°ø•!ØæÎ/j?•UH¿‡<Ö?«çõøMœ◊æ'∫ﬁøﬂﬂÇ>⁄#ÃøÓAπ?==C>ätáø‚Ô±><A?l^”>∑’K>ßCÀø–ƒÊ>´Ω•>>˜˙æc"ï¿a€êø#M;$>h∑œ>,mó>1Ù?≤ˆ?Ú“?p∞%?Í¡ê?og˝æã˚ﬂøîKá?Ìó?Ø’—>˛÷ü>ÖHŸæ€¸J?”ƒ÷øÙ ≥>LÖπΩOp>M©ø\¨økÊ@Î pæÃø”+“Ω$˚ÀΩy_’øco>¥sP?1ƒ>‰äò?JˆæPø>Õ!2¿6µπø¥8/?ñ—˙>0Ï+∏s‡øƒêæ‘ª∆<ﬁ¨ÜæWêê>ô®æp∑œ>KV˛ø÷˜òΩY}PøNÑxøkÔ?≥Ê√æ}ø:¡î:_Ó1Ωzb8øÖÄêø°ÿ?Nıî?ΩøÃ?u=≈pBΩh≥?.úíæççæ	ﬂæÃÌt> FsøáÀèøËÀ?b≠ΩóÏø:ü@gÂÃøÔiW>Ø25@≤•≥ø/…>sˇ	øÔ–;?,ï£@Â‰øﬁå≠æ!Ä¿<L¿‘∆@o£?A(‚?{YøÉÊ ?'÷∑?†sE?ù◊û@nõÍø•¿£≥Æ=ñ¬&¿ÚÓe¿|≠0øˇÖæ4ø˝ï∑øú˙¿T∞æÜïï¿–Kg¿á1z?FL@–E¿€_ã¿≤òøâ& ¿ å“>‰ âæLÛÄ@ìú?‹Ä»?Ü8ô?∂ÖÕæ*IBonnx::MatMul_13J0Œ∏Æ? ﬂ¿áöªøõJ)?.KÃ?ÿã¿?˜√Áø≤÷ûø√<?IG®?^Pë?khâ?Z$
+onnx::MatMul_0
+
+
+
+6b
+11
+
+
+
+j-
+/layer1/MatMul_output_0
+
+
+
+j*
+/layer1/Add_output_0
+
+
+
+j$
+/Relu_output_0
+
+
+
+j-
+/layer2/MatMul_output_0
+
+
+
+B
