@@ -1,4 +1,4 @@
-from torch import nn
+from torch import nn, float32
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D  # 用于绘制三维图像
@@ -51,6 +51,27 @@ class Network_2_hidden_layer(nn.Module):
         return self.layer3(x)  # 返回 layer3 结果
 
 
+# 对于图形输入，上述模板类不好用，会报错 mat1 mat2 shape不符合
+class Network_2_hidden_layer_for_mnist(nn.Module):
+    # 重载初始化函数（构造函数）
+    # 传入参数：输入层，隐藏层，输出层
+    def __init__(self, n_in, n_hidden_1, n_hidden_2, n_out):
+        super().__init__()  # 首先调用父类的初始化函数
+        self.flatten = nn.Flatten()
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(n_in, n_hidden_1),
+            nn.ReLU(),
+            nn.Linear(n_hidden_1, n_hidden_2),
+            nn.ReLU(),
+            nn.Linear(n_hidden_2, n_out),
+        )
+
+    # 定义前向传播
+    def forward(self, x):
+        x = self.flatten(x)
+        return self.linear_relu_stack(x)  # 返回 layer3 结果
+
+
 class Network_3_hidden_layer(nn.Module):
     # 重载初始化函数（构造函数）
     # 传入参数：输入层，隐藏层，输出层
@@ -86,10 +107,13 @@ def softmax_epoch(x, y, network, criterion, optimizer, n_epochs, n_print_loss):
         optimizer.step()  # 更新模型参数，使得损失函数减小
         optimizer.zero_grad()  # 将梯度清零，用于下一次迭代
 
+        # 计算准确率 accuracy
+        accuracy = (y_pred.argmax(1) == y).type(float32).sum().item() / len(y)
+
         # 模型的每一次迭代，都由前向传播，和反向传播组成
         if epoch % n_print_loss == 0:
-            # 每迭代 1000 次，打印当前损失
-            print("%d iterations: loss = %.4lf" % (epoch, loss.item()))
+            # 每迭代 n_print_loss 次，打印当前损失
+            print("%d iterations: loss = %.4lf, accuracy = %.4lf" % (epoch, loss.item(), accuracy))
     
     return network
 

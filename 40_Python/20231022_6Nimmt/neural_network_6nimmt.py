@@ -143,9 +143,9 @@ def create_model():
     
     if hidden_layers == 1:
         model = Network(n_features, n_hidden, n_classes, activation_func)
-    if hidden_layers == 2:
+    elif hidden_layers == 2:
         model = Network_2_hidden_layer(n_features, n_hidden, n_hidden_2, n_classes, activation_func)
-    if hidden_layers == 3:
+    elif hidden_layers == 3:
         model = Network_3_hidden_layer(n_features, n_hidden, n_hidden_2, n_hidden_3, n_classes, activation_func)
 
     return model
@@ -190,7 +190,7 @@ def predict(model, x, y, plot):
             # 选择概率最大的类别, torch.max(Tensor, dim) 其中 dim = -1（返回tensor的最小单位（行）的最大值索引）
             _, predicted = torch.max(h_i, -1)
             h.append(predicted.item())  # 添加到高度列表 h 中
-    x = x.data.numpy()
+    # x = x.data.numpy()
     if model_type == "fitting":
         h = h.data.numpy()
     
@@ -227,9 +227,9 @@ def model_visualization(model):
     # 随机化初始参数，维数从output向input反着写
     if hidden_layers == 1:
         dummy_input = torch.randn(n_classes, n_hidden, input_col_max)
-    if hidden_layers == 2:
+    elif hidden_layers == 2:
         dummy_input = torch.randn(n_classes, n_hidden_2, n_hidden, input_col_max)
-    if hidden_layers == 3:
+    elif hidden_layers == 3:
         dummy_input = torch.randn(n_classes, n_hidden_3, n_hidden_2, n_hidden, input_col_max)
 
     # 将模型导出为 ONNX 格式
