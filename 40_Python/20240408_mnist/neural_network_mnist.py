@@ -49,6 +49,11 @@ def get_data(plot):
     x_list = x_train[sample_start:sample_end]
     y_list = y_train_label[sample_start:sample_end]
 
+    if netowrk_type == "cnn":
+        # 给输入图像添加channel维度，默认值是1（参数axis是维度序号，不是数值）
+        x_list = np.expand_dims(x_list, axis=1)
+        print(x_list.shape)
+
     # 预览y的分布
     if plot:
         plt.scatter(sample_index_range, y_list, color="green")
