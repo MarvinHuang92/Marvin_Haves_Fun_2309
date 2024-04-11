@@ -51,27 +51,6 @@ class Network_2_hidden_layer(nn.Module):
         return self.layer3(x)  # 返回 layer3 结果
 
 
-# 对于图形输入，上述模板类不好用，会报错 mat1 mat2 shape不符合
-class Network_2_hidden_layer_for_mnist(nn.Module):
-    # 重载初始化函数（构造函数）
-    # 传入参数：输入层，隐藏层，输出层
-    def __init__(self, n_in, n_hidden_1, n_hidden_2, n_out):
-        super().__init__()  # 首先调用父类的初始化函数
-        self.flatten = nn.Flatten()
-        self.linear_relu_stack = nn.Sequential(
-            nn.Linear(n_in, n_hidden_1),
-            nn.ReLU(),
-            nn.Linear(n_hidden_1, n_hidden_2),
-            nn.ReLU(),
-            nn.Linear(n_hidden_2, n_out),
-        )
-
-    # 定义前向传播
-    def forward(self, x):
-        x = self.flatten(x)
-        return self.linear_relu_stack(x)  # 返回 layer3 结果
-
-
 class Network_3_hidden_layer(nn.Module):
     # 重载初始化函数（构造函数）
     # 传入参数：输入层，隐藏层，输出层
@@ -94,7 +73,82 @@ class Network_3_hidden_layer(nn.Module):
         x = self.layer3(x)  # 计算 layer3 结果
         x = self.activation_func(x)  # 调用激活函数
         return self.layer4(x)  # 返回 layer4 结果
-    
+
+
+# 对于图形输入，上述模板类不好用，会报错 mat1 mat2 shape不符合
+class Network_2_hidden_layer_for_image(nn.Module):
+    # 重载初始化函数（构造函数）
+    # 传入参数：输入层，隐藏层，输出层
+    def __init__(self, n_in, n_hidden_1, n_hidden_2, n_out):
+        super().__init__()  # 首先调用父类的初始化函数
+        self.flatten = nn.Flatten()
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(n_in, n_hidden_1),
+            nn.ReLU(),
+            nn.Linear(n_hidden_1, n_hidden_2),
+            nn.ReLU(),
+            nn.Linear(n_hidden_2, n_out),
+        )
+
+    # 定义前向传播
+    def forward(self, x):
+        x = self.flatten(x)
+        return self.linear_relu_stack(x)  # 返回 layer3 结果
+
+# 卷积神经网络，3个卷积层
+class Convolve_Network_3_kernel(nn.Module):
+    # 重载初始化函数（构造函数）
+    # 传入参数：输入层，隐藏层，输出层
+    def __init__(self, in_channels, conv_channels, out_channels, kernal_sizes, image_size, conv_layers=3):
+        super().__init__()  # 首先调用父类的初始化函数
+        self.flatten = nn.Flatten()
+
+        # 转换格式，支持整型或list输入
+        if type(conv_channels) == type(int()):
+            conv_channels = [conv_channels]*(conv_layers)
+        if type(kernal_sizes) == type(int()):
+            kernal_sizes = [kernal_sizes]*conv_layers
+        if type(image_size) == type(int()):
+            image_size = [image_size]*2
+        
+        # 定义卷积层（特征提取）
+        # in_channels: 输入颜色通道数（根据图像类型选1或3）
+        # out_channels: 输出的特征种类数（可以自定义）
+        # conv_layers: 卷积层数量
+        self.convs_stack = nn.Sequential(
+            nn.Conv2d(in_channels, conv_channels[0], kernal_sizes[0]),
+            nn.ReLU(),
+            nn.Conv2d(conv_channels[0], conv_channels[1], kernal_sizes[1]),
+            nn.ReLU(),
+            nn.Conv2d(conv_channels[1], conv_channels[2], kernal_sizes[2]),
+        )
+
+        # 定义池化层
+        self.polling_layer = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+
+        # 计算全连接层输入维度
+        def calcLinearInDim(input_dim, kernel_dim, stride=1, padding=0):
+            # 每次计算一个边长，长度或宽度
+            return (input_dim - kernel_dim + 2*padding)//stride + 1
+
+        dim_w, dim_h = image_size
+        for k_s in kernal_sizes:
+            dim_w = calcLinearInDim(dim_w, k_s)
+            dim_h = calcLinearInDim(dim_h, k_s)
+        linear_in_features = conv_channels[-1] * dim_w * dim_h
+
+        # 定义全连接层（分类器）
+        # 这一步没有激活函数
+        self.logits_layer = nn.Linear(in_features=linear_in_features, out_features=out_channels)
+
+    # 定义前向传播
+    def forward(self, x):
+        x = self.convs_stack(x)    # 卷积运算
+        # x = self.polling_layer(x)  # 池化运算
+        x = self.flatten(x)        # 数据维度重排，将 c*w*h 三个维度乘积作为一个维度，用于全连接层的输入
+        x = self.logits_layer(x)   # 全连接分类
+        return x
+
 
 # 训练模型 - softmax 回归模型的循环迭代
 def softmax_epoch(x, y, network, criterion, optimizer, n_epochs, n_print_loss):

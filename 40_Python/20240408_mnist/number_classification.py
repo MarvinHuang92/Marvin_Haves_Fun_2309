@@ -19,8 +19,11 @@ task_type = "prediction"               # 加载模型，跳过训练，直接进
 # task_type = "model_visualization"       # 模型可视化
 
 # 样本参数
+image_size = 28      # 输入图片边长，整型或list
+in_channels = 1      # 输入图片颜色通道数，1或3 
+
 sample_start_tr = 0   # 训练样本起点，最小为0
-batchsize_tr = 3200    # 训练时每组样本数
+batchsize_tr = 128     # 训练时每组样本数
 
 # training_batch = len(x_train)//batchsize_tr      # 训练组数
 training_batch = 2      # 训练组数
@@ -28,18 +31,25 @@ batch_training = True   # 是否自动进行多组训练
 
 # sample_start_pr = 0   # 测试样本起点，最小为0
 sample_start_pr = sample_start_tr + batchsize_tr * training_batch
-batchsize_pr = 160    # 测试时每组样本数
+batchsize_pr = 128    # 测试时每组样本数
 
 plot = True             # 是否显示拟合图像
 ###############################################################
 
 # 模型参数
 model_path = 'model_%s.pth' % netowrk_type
-n_features = 28*28         # 特征数（输入神经元数量，对应样本的维数）
-hidden_layers = 2          # 隐藏层数量
+
+# MLP参数
+n_features = image_size*image_size         # 特征数（输入神经元数量，对应样本的维数）
+hidden_layers = 2           # 隐藏层数量
 n_hidden = 312              # 隐藏神经元数量
 n_hidden_2 = 256            # 隐藏神经元数量
 # n_hidden_3 = 30            # 隐藏神经元数量
+
+# CNN参数
+conv_channels = [12, 24, 6]   # 卷积通道数（每层对应一个元素）
+kernal_sizes =  [7, 5, 3]     # 卷积核尺寸（只有边长，默认正方形卷积核）
+
 # 输出神经元数量，拟合问题：1个，分类问题:（类别数量）
 if model_type == "fitting":
     n_classes = 1
@@ -48,12 +58,18 @@ elif model_type == "classification":
 
 # 训练参数
 n_epochs = 1024+1             # 迭代次数
-# 学习速率 （仅设置新微调模型的学习速率；创建的模型，学习速率*10）
-if model_type == "fitting":
-    learning_rate = 0.0005   # 可以在训练中途调整，先快后慢(0.01 -> 0.0001)
+if netowrk_type == "cnn":
+    n_epochs = 256+1           # 迭代次数
+# 学习速率 （仅设置微调模型的学习速率；对于新创建的模型，学习速率*10）
+if netowrk_type == "cnn":
+    learning_rate = 2e-3  # 可以在训练中途调整，先快后慢(0.01 -> 0.0001)
+elif model_type == "fitting":
+    learning_rate = 5e-4
 elif model_type == "classification":
     learning_rate = 2e-5
-n_print_loss = 128          # 每迭代n次，打印当前损失
+n_print_loss = 200          # 每迭代n次，打印当前损失
+if netowrk_type == "cnn":
+    n_print_loss = 16       # 每迭代n次，打印当前损失
 
 ###############################################################
 

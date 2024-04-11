@@ -22,7 +22,7 @@ from number_classification import *
 
 # 定义神经网络类，和一些辅助函数
 sys.path.append("../202308_Neural_Network")  # 跨目录引用模块，先将所在目录添加至系统路径
-from neural_network_template import Network_2_hidden_layer_for_mnist, softmax_epoch, calcMSE, plot_3d_figure
+from neural_network_template import Network_2_hidden_layer_for_image, Convolve_Network_3_kernel, softmax_epoch, calcMSE, plot_3d_figure
 
 
 # 样本区间初始化
@@ -76,9 +76,11 @@ def create_model():
     # 模型参数从全局变量中获取
 
     # 创建神经网络实例   
-    # Network_2_hidden_layer_for_mnist 类里面规定了用relu函数
+    # Network_2_hidden_layer_for_image 类里面规定了用relu函数
     if hidden_layers == 2:
-        model = Network_2_hidden_layer_for_mnist(n_features, n_hidden, n_hidden_2, n_classes)
+        model = Network_2_hidden_layer_for_image(n_features, n_hidden, n_hidden_2, n_classes)
+        if netowrk_type == "cnn":
+            model = Convolve_Network_3_kernel(in_channels, conv_channels, n_classes, kernal_sizes, image_size)
 
     return model
 
@@ -101,6 +103,8 @@ def training_model(model, lr, x, y):
         criterion = nn.CrossEntropyLoss()  # 交叉熵损失函数
     # Adam 优化器
     optimizer = torch.optim.Adam(model.parameters(), lr)
+    if netowrk_type == "cnn":
+        optimizer = torch.optim.SGD(model.parameters(), lr)
 
     print("Learning Rate: %f\n" % lr)
     
@@ -209,7 +213,7 @@ def main(task_type, current_batch, plot):
     # 创建新模型
     if model_input == "create_new_model":
         model = create_model()
-        lr = learning_rate * 10  # 初次创建的模型，学习速率*10
+        lr = learning_rate * 10  # 对于初次创建的模型，学习速率*10
     # 加载已有模型
     elif model_input == "load_existing_model":
         model = load_model()
