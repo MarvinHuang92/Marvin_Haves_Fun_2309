@@ -40,7 +40,7 @@ def calcSampleRange(current_batch):
         sample_start = sample_start_tr + batchsize_tr * (current_batch - 1)
         sample_end = sample_start + batchsize_tr
     sample_index_range = range(sample_start, sample_end)
-    print("Sample index: [%d-%d]\n" % (sample_start, sample_end - 1))
+    print("Sample index: [%d-%d]" % (sample_start, sample_end - 1))
 
 
 # 生成数据样本
@@ -52,7 +52,7 @@ def get_data(plot):
     if netowrk_type == "cnn":
         # 给输入图像添加channel维度，默认值是1（参数axis是维度序号，不是数值）
         x_list = np.expand_dims(x_list, axis=1)
-        print(x_list.shape)
+    print("Sample dimension: %s\n" % str(x_list.shape))
 
     # 预览y的分布
     if plot:
@@ -152,11 +152,11 @@ def model_visualization(model):
     
     # 随机化初始参数，维数从output向input反着写
     if hidden_layers == 1:
-        dummy_input = torch.randn(n_classes, n_hidden, input_col_max)
+        dummy_input = torch.randn(n_classes, n_hidden, n_features)
     elif hidden_layers == 2:
-        dummy_input = torch.randn(n_classes, n_hidden_2, n_hidden, input_col_max)
+        dummy_input = torch.randn(n_classes, n_hidden_2, n_hidden, n_features)
     elif hidden_layers == 3:
-        dummy_input = torch.randn(n_classes, n_hidden_3, n_hidden_2, n_hidden, input_col_max)
+        dummy_input = torch.randn(n_classes, n_hidden_3, n_hidden_2, n_hidden, n_features)
 
     # 将模型导出为 ONNX 格式
     path = 'model.onnx'
