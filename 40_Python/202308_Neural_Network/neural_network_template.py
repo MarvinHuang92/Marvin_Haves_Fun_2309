@@ -131,10 +131,14 @@ class Convolve_Network_3_kernel(nn.Module):
             # 每次计算一个边长，长度或宽度
             return (input_dim - kernel_dim + 2*padding)//stride + 1
 
+        # 计算卷积层对维度的影响
         dim_w, dim_h = image_size
         for k_s in kernal_sizes:
             dim_w = calcLinearInDim(dim_w, k_s)
             dim_h = calcLinearInDim(dim_h, k_s)
+        # 计算池化层对维度的影响
+        dim_w = calcLinearInDim(dim_w, kernel_dim=2, stride=2)
+        dim_h = calcLinearInDim(dim_h, kernel_dim=2, stride=2)
         linear_in_features = conv_channels[-1] * dim_w * dim_h
 
         # 定义全连接层（分类器）
@@ -144,7 +148,7 @@ class Convolve_Network_3_kernel(nn.Module):
     # 定义前向传播
     def forward(self, x):
         x = self.convs_stack(x)    # 卷积运算
-        # x = self.polling_layer(x)  # 池化运算
+        x = self.polling_layer(x)  # 池化运算
         x = self.flatten(x)        # 数据维度重排，将 c*w*h 三个维度乘积作为一个维度，用于全连接层的输入
         x = self.logits_layer(x)   # 全连接分类
         return x
