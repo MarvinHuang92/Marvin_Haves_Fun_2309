@@ -1,0 +1,1 @@
+python random_kill.py > log.csv
