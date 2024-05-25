@@ -1,0 +1,4 @@
+如果找不到dll：
+set PATH=%PATH%;C:\TCC\Tools\mingw64\8.1.0_WIN64\bin
+
+然后运行exe
