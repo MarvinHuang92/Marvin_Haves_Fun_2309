@@ -1,7 +1,8 @@
 #include <iostream>
+#include <cmath>
 using namespace std;
 
-/* 快速计算倒数平方根 */
+/* 快速计算平方根的倒数 y = 1/sqrt(x) */
 float Q_rsqrt(float number)
 {
     long i;
@@ -18,13 +19,25 @@ float Q_rsqrt(float number)
     return y;
 }
 
+/* 普通算法 */
+float Normal_rsqrt(float number)
+{
+    float x2, y;
+
+    x2 = sqrtf(number);
+    y = 1 / x2;
+
+    return y;
+}
 
 int main()
 {
-    float num = 4;
+    float num = 4.0;
     float q_rsqrt = Q_rsqrt(num);
+    float n_rsqrt = Normal_rsqrt(num);
 
     cout << q_rsqrt << endl;
-	getchar();
+    cout << n_rsqrt << endl;
+	// getchar();  // 等待用户输入
     return 0;
 }
