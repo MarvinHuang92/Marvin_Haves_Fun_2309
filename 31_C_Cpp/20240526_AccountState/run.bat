@@ -1,4 +1,4 @@
 @echo off
-call config_home.bat
+call config.bat
 call %filename%.exe
 pause
