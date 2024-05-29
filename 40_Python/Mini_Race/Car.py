@@ -13,7 +13,8 @@ H = 900
 
 import pygame
 from pygame.locals import *
-from sys import exit
+from sys import exit, path
+path.append("Lib/site-packages")
 from Vec2d import Vec2d
 from math import *
 
