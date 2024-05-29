@@ -37,34 +37,45 @@ class Game():
     # 初始化显示地图
     def init_map(self):
         map_for_display = []
-        row = " " * (2 * self.map_range[0] + 1)
+        row = [" "] * (2 * self.map_range[0] + 1)
         for i in range(2 * self.map_range[1] + 1):
-            map_for_display.append(row)
+            map_for_display.append(row[:])
         return map_for_display
 
     # 更新地图
     def update_map(self):
-        # self.map_for_display.append()
         for wall in self.walls:
-            pass
+            x, y = wall.start_point
+            if wall.direction == 0:
+                self.map_for_display[2*y][2*x+1] = "-"
+            elif wall.direction == 1:
+                self.map_for_display[2*y+1][2*x] = "|"
     
     # 显示地图
     def show_map(self):
-        for line in self.map_for_display:
+        for row in self.map_for_display:
+            line = ""
+            for char in row:
+                line += char
             print(line)
 
 
 
 # 游戏主进程
 def run_game():
+    # direction, x, y
     walls_list = [
         [0, 0, 0],
-        [1, 0, 0]
+        [1, 0, 0],
+        [0, 1, 0],
+        [1, 1, 0],
+        [0, 0, 1],
+        [1, 0, 1]
     ]
     game = Game(10, 10, walls_list)
     game.update_map()
     game.show_map()
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     run_game()
