@@ -12,7 +12,13 @@ def get_data(target_url):
     }
     # 例子的url
     # url = 'https://www.js-lottery.com/Article/news/group_id/3/article_id/91912.html' # 目标网页
-    url = 'http://www.js-lottery.com' + target_url
+    if target_url[1:5] != "http":
+        url = 'https://www.js-lottery.com' + target_url
+    else:
+        url = target_url[1:].replace("http", "https")
+    # url = "https://www.js-lottery.com/Chart/sevenFenBu"
+    print(url)
+
     # 利用requests对象的get方法，对指定的url发起请求，该方法会返回一个Response对象
     res = requests.get(url, headers=headers)
     # 通过Response对象的text方法获取网页的文本信息，res.text是一个完整的str
@@ -20,6 +26,10 @@ def get_data(target_url):
 
     # 将res.text从一整个str拆分成单行
     text_list = res.text.split('\n')
+    with open("test_res_test_splited.txt", "w", encoding="utf-8") as f:
+        f.writelines(line + "\n" for line in text_list)
+        f.close()
+
     # 搜索其中带有关键信息的行号
     batch_num = '    <title> 中国体育彩票江苏省7位数第'
     date_line = '<p>开奖日期'
