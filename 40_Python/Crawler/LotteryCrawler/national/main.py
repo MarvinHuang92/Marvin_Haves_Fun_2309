@@ -16,6 +16,7 @@ if os.path.exists('history.ini'):
     with open('history.ini') as f:
         content = f.readlines()
         f.close()
+    """
     try:
         # 这个是以前的，已经过期
         # starting_url = '/' + content[-3].strip('http://www.js-lottery.com')
@@ -38,34 +39,59 @@ if os.path.exists('history.ini'):
         content = []
         starting_url = default_url
         history_read = False
+    """
+    for line in content:
+        if not line.strip() == "":
+            print(line.strip())
+    history_read = True
 else:
     print('未找到历史记录\n')
-    starting_url = default_url
+    # starting_url = default_url
 
 # 运行爬虫
-current_data = get_data.get_data(starting_url)
-while True:
+# current_data = get_data.get_data(starting_url)
+current_data = get_data.get_data()
+# while True:
+
+for i in range(len(current_data['report'])):
+
+    current_report = current_data['report'][i]
+    current_lottery_num = current_data['lottery_num'][i]
+
     # 如果正确读取了历史记录，则跳过最后一次记录的结果
-    if not history_read:
-        result1 = current_data['current_url']
-        result2 = current_data['report'] + '  ' + calc_prize.calc_prize(default_array, current_data['lottery_num'])
+    # if not history_read:
+
+    current_report_in_history = False
+    if history_read:
+        for line in content:
+            if current_report in line:
+                current_report_in_history = True
+                break
+
+    if not history_read or not current_report_in_history:
+        # result1 = current_data['current_url']
+        # result2 = current_data['report'] + '  ' + calc_prize.calc_prize(default_array, current_data['lottery_num'])
+        result2 = current_report + '  ' + calc_prize.calc_prize(default_array, current_lottery_num)
         # 在屏幕显示结果
-        print("全国 " + result2)
+        print("[新增] " + result2)
         # 将结果附加在历史记录中
-        content.append(result1+ '\n')
+        # content.append(result1+ '\n')
         content.append(result2+ '\n')
         content.append('\n')  # 一个空白行，方便人工阅读ini文件
-    # 重置状态，否则将持续跳过
-    history_read = False
+    
+    # # 重置状态，否则将持续跳过
+    # history_read = False
 
-    try:
-        next_url = current_data['next_url']  # 因为最后一个缺少next_url键，会报错KeyError
-        current_data = get_data.get_data(next_url)
-    except KeyError:
-        break
+    # try:
+    #     next_url = current_data['next_url']  # 因为最后一个缺少next_url键，会报错KeyError
+    #     current_data = get_data.get_data(next_url)
+    # except KeyError:
+    #     break
 
 # 写入新的历史记录
 with open('history.ini', 'w') as f:
     f.writelines(content)
     f.close()
+
+print("")
     
