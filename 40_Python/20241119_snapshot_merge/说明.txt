@@ -1,0 +1,12 @@
+输入两张图片，尺寸必须一致（img_width， img_height）
+
+可以选择垂直滚动或水平滚动 （scroll_direction）
+
+两张图片重叠部分不小于10% （可调参数，min_overlap_ratio）
+
+计算图片重叠部分时，会忽略右侧或下边滚动条，阈值为5% （scroll_bar_margin_right）
+
+offset为两张图片的像素偏移量，从0 - 90%长宽遍历 （1 - min_overlap_ratio）
+比较重叠部分时，每隔20像素去一个样本点，计算RGB差值并平均，差值平均小于1.0则停止遍历 （pixel_diff_avg_threshold）
+
+拼合时，后一张图片会覆盖前一张
