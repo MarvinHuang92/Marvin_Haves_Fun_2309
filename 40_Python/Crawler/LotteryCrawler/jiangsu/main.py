@@ -56,6 +56,7 @@ current_data = get_data.get_data()
 for i in range(len(current_data['report'])):
 
     current_report = current_data['report'][i]
+    current_batch_no = current_data['batch_no'][i]
     current_lottery_num = current_data['lottery_num'][i]
 
     # 如果正确读取了历史记录，则跳过最后一次记录的结果
@@ -70,8 +71,16 @@ for i in range(len(current_data['report'])):
 
     if not history_read or not current_report_in_history:
         # result1 = current_data['current_url']
-        # result2 = current_data['report'] + '  ' + calc_prize.calc_prize(default_array, current_data['lottery_num'])
-        result2 = current_report + '  ' + calc_prize.calc_prize(default_array, current_lottery_num)
+        # result2 = current_data['report'] + '  ' + calc_prize.calc_prize(default_array_1, current_data['lottery_num'])
+        result2 = current_report 
+        
+        # 第一组自选号码
+        if current_batch_no <= end_index_of_array_1:
+            result2 += ('  ' + calc_prize.calc_prize(default_array_1, current_lottery_num))
+
+        # 第二组自选号码
+        if current_batch_no >= start_index_of_array_2:
+            result2 += ('  ' + calc_prize.calc_prize(default_array_2, current_lottery_num))
 
         # # 如果是星期4的结果
         # if int(current_data['batch_no']) > 23045 or current_data['weekday'] == '星期四':
