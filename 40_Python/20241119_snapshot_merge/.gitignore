@@ -1,1 +1,13 @@
 screenshot*.png
+screenshot*.jpg
+
+crop_input/*.png
+crop_input/*.jpg
+
+crop_output/*.png
+crop_output/*.jpg
+
+merge_output/*.png
+merge_output/*.jpg
+
+/__pycache__/
