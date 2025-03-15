@@ -17,14 +17,15 @@ if __name__ == "__main__":
     # crop_area = (20, 594, 1094, 1560)
     crop_area = (20, 612, 1091, 1540)
 
+    print("如需重新选取裁剪区域，请先打开图片，并将本程序框拖动到不遮挡图片的位置，再输入字符...\n")
     print("当前裁剪区域为： " + str(crop_area))
-    a = input("是否重新选取裁剪区域？（默认重新选取，输入任意字符跳过此步骤）")
-    if a.strip() == "":
+    a = input("是否重新选取裁剪区域？\n- 直接回车：不重新选取\n- 输入任意字符：重新选取\n")
+    if a.strip() != "":
         crop_area = lm.main()
 
     # 遍历输入文件夹
-    input_dir = "crop_input"
-    output_dir = "crop_output"
+    input_dir = "02_crop_input"
+    output_dir = "02_crop_output"
     input_images = []
     output_images = []
 
@@ -39,3 +40,5 @@ if __name__ == "__main__":
     # 批量裁剪图片
     for i in range(len(input_images)):
         img_crop(input_images[i], output_images[i], crop_area)
+    
+    os.system('start "" ' + output_dir)

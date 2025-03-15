@@ -11,9 +11,6 @@ from math import sqrt
 test_mode = False  # 工作模式
 
 # global config
-scroll_direction = "vertical"
-# scroll_direction = "horizontal"
-
 # input image (for test mode only)
 image_path_1 = "screenshot_1.png"
 image_path_2 = "screenshot_2.png"
@@ -197,11 +194,25 @@ def img_merge(img_1, img_2, output_path, scroll_direction):
 
 
 if __name__ == "__main__":
+    
+    # 拼合方向：垂直向下/水平向右
+    scroll_direction_candidates = ["vertical", "horizontal"]
+
+    while True:
+        print("请选择拼合方向：")
+        print("1. 垂直向下")
+        print("2. 水平向右")
+        a = input("")
+        if a.strip() in ["1", "2"]:
+            scroll_direction = scroll_direction_candidates[int(a.strip()) - 1]
+            break
 
     if test_mode:
         # size of a single snapshot
         img_width = int(1920 / 3)   # 测试用，可以修改
         img_height = int(1080 / 2)  # 测试用，可以修改
+        img_width_2 = img_width
+        img_height_2 = img_height
 
         # create snapshot as input
         img_1 = pyautogui.screenshot(region=[0, 0, img_width, img_height])  # x, y, w, h
@@ -212,12 +223,13 @@ if __name__ == "__main__":
 
         img_merge(img_1, img_2, output_path, scroll_direction)
 
+        os.system('start "" ' + output_path)
+
     # working mode
     else:
-
         # 遍历输入文件夹
-        input_dir = "crop_output"
-        output_dir = "merge_output"
+        input_dir = "03_merge_input"
+        output_dir = "03_merge_output"
         input_images = []
         output_images = []
 
@@ -253,4 +265,6 @@ if __name__ == "__main__":
                     img_height_2 = img_2.height  # 更新去白边后的图2尺寸
 
                 img_merge(img_1, img_2, output_images[i], scroll_direction)
+    
+        os.system('start "" ' + output_dir)
                 
