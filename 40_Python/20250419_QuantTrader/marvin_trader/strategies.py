@@ -8,12 +8,12 @@ class Strategy():
     
     def calcCommonInfo(self, data, periods=1):
         # 计算相较昨日的涨跌幅
-        data['Daily_Return'] = data['Close'].pct_change()  # for yfinance
+        data['Daily_Return'] = data['Close'].pct_change(fill_method=None)  # for yfinance
         # data['Daily_Return'] = data['pctChg'] / 100.0  # for baostock (百分比，需要除以100)
         # 计算过去N个交易日平均涨跌幅
         # data['Sum_Return'] = (data['Close'] - data['Close'].shift(periods)) / data['Close'].shift(periods)
         # data['Avg_Return'] = data['Sum_Return'] / periods
-        data['Avg_Return'] = data['Close'].pct_change(periods)
+        data['Avg_Return'] = data['Close'].pct_change(periods, fill_method=None)
         # 计算短期和长期移动平均
         data['MA_Near'] = data['Close'].rolling(window=self.AvgDays_Near).mean()
         data['MA_Far'] = data['Close'].rolling(window=self.AvgDays_Far).mean()
@@ -52,11 +52,12 @@ class StrategyYesterdayReturnBinarized(Strategy):
     
     # 计算仓位
     def calcPosition(self, data):
+        X_up = 0.015  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
         data = self.calcCommonInfo(data)
         # 生成买卖信号
         # 昨天涨了，则今天开盘时全仓买入
         # 昨天跌了，今天空仓
-        data.loc[data['Daily_Return'] > 0, 'Signal'] = 1  # 以昨日涨幅为信号，涨幅为正则满仓，否则空仓
+        data.loc[data['Daily_Return'] >= X_up, 'Signal'] = 1  # 以昨日涨幅为信号，涨幅超过止损线则满仓，否则空仓
         return data
     
 
@@ -71,7 +72,7 @@ class StrategyCustomize(Strategy):
 
         N = 4  # 平均涨跌幅计算天数
         R_up = 0.01  # 平均涨幅阈值
-        X_up = 0.005  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
+        X_up = 0.015  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
         R_down = -0.005  # 平均跌幅阈值
         data = self.calcCommonInfo(data, periods=N)
         
@@ -108,7 +109,7 @@ class StrategyMultiTargetRotation(Strategy):
 
     # 第二轮调用：计算选择哪只股票
     def calcChoice(self, data, num=1):
-        X_up = 0.015  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
+        X_up = 0.0145  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
         
         # 比较所有个股的平均涨幅，选取最大值所在列
         # AR = Avg_Return, DR = Daily_Return

@@ -23,8 +23,9 @@ re_download_data = False
 # 轮动个股
 rotation_symbol_list = [
     # "sh.000300",  # 沪深300
-    "sh.000852",  # 中证1000
+    # "sh.000852",  # 中证1000
     # "sz.399006",  # 创业板指
+    "sz.399249",  # 综企指数
     # "sz.399303",  # 国证2000
     # "sz.399905",  # 中证500
     "sz.399967",  # 中证军工
@@ -32,11 +33,57 @@ rotation_symbol_list = [
     # "sh.600828",  # 茂业商业
     # "sh.601988",  # 中国银行
     # "sz.H30269",  # 红利低波指数，无数据
+
+    # symbol	start_date	end_date	Final_Return
+    # "sz.399249", #	2014/1/1	2025/4/30	20.8521
+    # "sz.399967", #	2014/1/1	2025/4/30	11.7403
+    # "sz.399236", #	2014/1/1	2025/4/30	9.6561
+    # "sz.399368", #	2014/1/1	2025/4/30	8.524
+    # "sz.399360", #	2014/1/1	2025/4/30	7.6734
+    # "sz.399959", #	2014/1/1	2025/4/30	7.6217
+    # "sz.399409", #	2014/1/1	2025/4/30	6.9314
+    # "sh.000852", #	2014/1/1	2025/4/30	6.6378
+    # "sz.399666", #	2014/1/1	2025/4/30	6.4925
+    # "sz.399010", #	2014/1/1	2025/4/30	6.3802
+    # "sz.399664", #	2014/1/1	2025/4/30	6.3363
+    # "sz.399239", #	2014/1/1	2025/4/30	6.1979
+    # "sz.399303", #	2014/1/1	2025/4/30	6.1002
+    # "sz.399628", #	2014/1/1	2025/4/30	6.0149
+
 ]
 
 # 轮动起止时间
-rotation_start_date = "2014-1-1"
-rotation_end_date   = "2025-4-30"
+rotation_dates = [
+    # 全周期
+    # ["2014-1-1", "2025-4-30"],
+
+    # 短周期
+    ["2025-1-1", "2025-5-9"],
+    
+    # 一年窗口期
+    # ["2014-1-1", "2014-12-31"],
+    # ["2015-1-1", "2015-12-31"],
+    # ["2016-1-1", "2016-12-31"],
+    # ["2017-1-1", "2017-12-31"],
+    # ["2018-1-1", "2018-12-31"],
+    # ["2019-1-1", "2019-12-31"],
+    # ["2020-1-1", "2020-12-31"],
+    # ["2021-1-1", "2021-12-31"],
+    # ["2022-1-1", "2022-12-31"],
+    # ["2023-1-1", "2023-12-31"],
+    # ["2024-1-1", "2024-12-31"],
+
+    # 三年窗口期
+    # ["2014-1-1", "2016-12-31"],
+    # ["2015-1-1", "2017-12-31"],
+    # ["2016-1-1", "2018-12-31"],
+    # ["2017-1-1", "2019-12-31"],
+    # ["2018-1-1", "2020-12-31"],
+    # ["2019-1-1", "2021-12-31"],
+    # ["2020-1-1", "2022-12-31"],
+    # ["2021-1-1", "2023-12-31"],
+    # ["2022-1-1", "2024-12-31"],
+]
 
 ##############################################################
 
@@ -118,6 +165,12 @@ def get_stock_list(input_csv):
     return dict_from_df
 
 def main(stock_info, strategy, rotation=False):
+    global quick_test_symbol
+    global quick_test_symbol_2
+    global quick_test_start_date
+    global quick_test_end_date
+    global quick_test_C_Return
+
     # # 获取股票数据，后缀上海=SS，深圳=SZ
     # # 多只股票可定义为列表
     # # symbol = "000300.SS"  # 沪深300指数
@@ -127,7 +180,7 @@ def main(stock_info, strategy, rotation=False):
 
     if rotation:  # 轮动策略，stock_info输入应当为列表
         if not type(stock_info).__name__ == "list":
-            print("ERROR: 'stock_info' shall be list for rotation strategy!")
+            print("ERROR: 'stock_info' shall be list for rotation strategy!\n")
             exit(-1)
 
     else:  # 非轮动策略，stock_info如果是列表，只取第一个元素，如果不是，组装成列表
@@ -159,7 +212,14 @@ def main(stock_info, strategy, rotation=False):
             data = baostock_get_data(symbol, start_date, end_date)
             data['RowIndex'] = range(len(data))  # 给每一行添加索引，方便后面调用
             data.to_csv(csv_path, encoding="gbk", index=False)
-        print(data.head())  # 不加参数，默认显示5行
+        # 如果未成功下载数据，会得到空的dataFrame，跳过
+        if data.empty:
+            print("WARNING: '%s' data download failed!\n" % symbol)
+            break
+        else:
+            print("'%s' data loaded successully." % symbol)
+            print(data.head())  # 不加参数，默认显示5行
+            print("")  # 空白行
 
         if rotation:
             data_list.append(data)
@@ -180,6 +240,13 @@ def main(stock_info, strategy, rotation=False):
             # 计算累计收益
             # cumprod() 累计做乘法，可以体现复利
             data['Cumulative_Return'] = (1 + data['Strategy_Return']).cumprod()
+            print("Stock '%s' from %s to %s" % (symbol, start_date, end_date))
+            print("Final Return: %.4f\n" % data.iloc[-1]['Cumulative_Return'])
+
+            quick_test_symbol.append(symbol)
+            quick_test_start_date.append(start_date)
+            quick_test_end_date.append(end_date)
+            quick_test_C_Return.append("%.4f" % data.iloc[-1]['Cumulative_Return'])
 
             # 输出包含该策略参数的csv
             csv_strategy_filename = "Strategy_Data_%s_%s_%s_%s_Avg_%d_%d" % (strategy.name, symbol, start_date, end_date, 
@@ -246,7 +313,7 @@ def main(stock_info, strategy, rotation=False):
             # 检查数据长度是否一致
             if not(data["date"].equals(data_assembled["date"]) and
                data["RowIndex"].equals(data_assembled["RowIndex"])):
-                print("ERROR: data 'date' or 'RowIndex' mismatch for rotation strategy!")
+                print("ERROR: data 'date' or 'RowIndex' mismatch for rotation strategy!\n")
                 exit(-1)
             
             # 第一轮计算：单只股票的涨幅信息
@@ -268,6 +335,14 @@ def main(stock_info, strategy, rotation=False):
         # 计算累计收益
         # cumprod() 累计做乘法，可以体现复利
         data_assembled['Cumulative_Return'] = (1 + data_assembled['Strategy_Return']).cumprod()
+        print("Stock '%s' from %s to %s" % (str(symbol_list), start_date, end_date))
+        print("Final Return: %.4f\n" % data_assembled.iloc[-1]['Cumulative_Return'])
+
+        quick_test_symbol.append(symbol_list[0])
+        quick_test_symbol_2.append(symbol_list[1])
+        quick_test_start_date.append(start_date)
+        quick_test_end_date.append(end_date)
+        quick_test_C_Return.append("%.4f" % data_assembled.iloc[-1]['Cumulative_Return'])
 
         # 输出包含该策略参数的csv
         csv_rotation_filename = "RotationStrategy_Data_%s_%s_%s" % (str(symbol_list), start_date, end_date)
@@ -327,29 +402,57 @@ def main(stock_info, strategy, rotation=False):
 if __name__ == "__main__":
     create_output_dir()
 
+    # 快速测试：数据初始化
+    quick_test_symbol = []
+    quick_test_symbol_2 = []  # 仅用于轮动测试
+    quick_test_start_date = []
+    quick_test_end_date = []
+    quick_test_C_Return = []
+
     # 针对输入列表的每只股票，计算策略收益
     if not rotation:
         ########## 选择交易策略 ##########
         # 移动平均线策略
         # strategy = StrategyMoveAvg(avg_near=1, avg_far=60)
         # 昨日收益率二值化策略
-        # strategy = StrategyYesterdayReturnBinarized(avg_near=1, avg_far=60)
+        strategy = StrategyYesterdayReturnBinarized()
         # 连续上涨周期，或超跌反弹策略
-        strategy = StrategyCustomize()
+        # strategy = StrategyCustomize()
+
         for stock_info in get_stock_list("input/Stock_list.csv"):
             if not (stock_info['baostock_available'] == 'N'):
                 main(stock_info, strategy)
         
+        # 快速测试1：筛选高收益率个股
+        df_quick_test = pd.DataFrame({
+            "symbol": quick_test_symbol,
+            "start_date": quick_test_start_date,
+            "end_date": quick_test_end_date,
+            "Final_Return": quick_test_C_Return,
+        })
+        df_quick_test.to_csv("quick_test_result_1.csv", encoding="gbk", index=False)
+        
     # 轮动策略
     else:
         strategy = StrategyMultiTargetRotation()
-        stock_info_for_rotation = []
-        for rotation_symbol in rotation_symbol_list:
-            stock_info = {}
-            stock_info["symbol"] = rotation_symbol
-            stock_info["start_date"] = rotation_start_date
-            stock_info["end_date"] = rotation_end_date
-            stock_info_for_rotation.append(stock_info)
-        main(stock_info_for_rotation, strategy, rotation=True)
+        for date in rotation_dates:
+            stock_info_for_rotation = []
+            for rotation_symbol in rotation_symbol_list:
+                stock_info = {}
+                stock_info["symbol"] = rotation_symbol
+                stock_info["start_date"] = date[0]
+                stock_info["end_date"] = date[1]
+                stock_info_for_rotation.append(stock_info)
+            main(stock_info_for_rotation, strategy, rotation=True)
+
+        # 快速测试2：测试不同时间窗口收益率
+        df_quick_test = pd.DataFrame({
+            "symbol_1": quick_test_symbol,
+            "symbol_2": quick_test_symbol_2,
+            "start_date": quick_test_start_date,
+            "end_date": quick_test_end_date,
+            "Final_Return": quick_test_C_Return,
+        })
+        df_quick_test.to_csv("quick_test_result_2.csv", encoding="gbk", index=False)
     
     
