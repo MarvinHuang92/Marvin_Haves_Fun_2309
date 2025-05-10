@@ -1,25 +1,76 @@
 import os
 import pandas as pd
-import yfinance as yf
+# import yfinance as yf
+import baostock as bs
 import matplotlib.pyplot as plt
 from strategies import *
+
+
+def baostock_get_data(symbol, start_date, end_date):
+
+    #### 登陆系统 ####
+    lg = bs.login()
+    # 显示登陆返回信息
+    print('login respond error_code:'+lg.error_code)
+    print('login respond error_msg:'+lg.error_msg)
+
+    #### 获取历史K线数据 ####
+    # 详细指标参数，参见“历史行情指标参数”章节
+    # 如添加更多指标参数，需注意数据类型转换(默认都是str)
+    attributes = "date,code,open,high,low,close,preclose,volume,amount,adjustflag,turn,tradestatus,pctChg,peTTM,pbMRQ,psTTM,pcfNcfTTM,isST"
+    # frequency="d"取日k线，adjustflag="3"默认不复权
+    rs = bs.query_history_k_data_plus(symbol, attributes, start_date, end_date, frequency="d", adjustflag="3")
+    print('query_history_k_data_plus respond error_code:'+rs.error_code)
+    print('query_history_k_data_plus respond error_msg:'+rs.error_msg)
+
+    #### 获取结果集 ####
+    data_list = []
+    while (rs.error_code == '0') & rs.next():
+        # 获取一条记录，将记录合并在一起
+        data_list.append(rs.get_row_data())
+    result = pd.DataFrame(data_list, columns=rs.fields)
+
+    #### 登出系统 ####
+    bs.logout()
+
+    # 数据类型转换：将str转为数值（暂只对常用指标转换，如需要可添加更多）
+    result["Open"] = pd.to_numeric(result["open"])  # 为了适配yfinance脚本风格，首字母大写
+    result["High"] = pd.to_numeric(result["high"])  # 为了适配yfinance脚本风格，首字母大写
+    result["Low"] = pd.to_numeric(result["low"])    # 为了适配yfinance脚本风格，首字母大写
+    result["Close"] = pd.to_numeric(result["close"])# 为了适配yfinance脚本风格，首字母大写
+    result["preclose"] = pd.to_numeric(result["preclose"])
+    result["volume"] = pd.to_numeric(result["volume"])
+    result["amount"] = pd.to_numeric(result["amount"])
+    result["turn"] = pd.to_numeric(result["turn"])
+
+    return result
 
 def create_output_dir():
     if not os.path.isdir("output"):
         os.mkdir("output")
     if not os.path.isdir("output/svg_plot"):
         os.mkdir("output/svg_plot")
+    if not os.path.isdir("output/csv"):
+        os.mkdir("output/csv")
 
 def get_stock_list(input_csv):
     # 忽略csv注释中的中文编码错误
     data = pd.read_csv(input_csv, encoding="utf_8", encoding_errors="ignore")
 
     data = data.iloc[1:]  # 丢弃第一行（中文注释）
-    data = data.drop(["comment", "Unnamed: 5"], axis=1)  # 丢弃指定的列
+    data = data.drop(["comment", "Unnamed: 6"], axis=1)  # 丢弃指定的列
 
     # 修改日期格式
-    data['start_date'] = data.apply(lambda date: date['start_date'].replace("/", "-"), axis=1)
-    data['end_date'] = data.apply(lambda date: date['end_date'].replace("/", "-"), axis=1)
+    data['start_date'] = data.apply(lambda data: data['start_date'].replace("/", "-"), axis=1)
+    data['end_date'] = data.apply(lambda data: data['end_date'].replace("/", "-"), axis=1)
+    # 将yfinance的股票代码格式适配为baostock的格式
+    def symbol_adaptation(symbol_str):
+        if ".SS" in symbol_str:
+            symbol_str = "sh." + symbol_str.strip(".SS")
+        elif ".SZ" in symbol_str:
+            symbol_str = "sz." + symbol_str.strip(".SZ")
+        return symbol_str
+    data['symbol'] = data.apply(lambda data: symbol_adaptation(data['symbol']), axis=1)
 
     # records是内置参数，将dataframe转换为字典列表 [{}, {}, ...] 的格式
     dict_from_df = data.to_dict("records")
@@ -40,8 +91,16 @@ def main(stock_info, strategy):
     end_date = stock_info["end_date"]
 
     # 获取股票的历史交易信息（当前：每次仅处理一只股票）
-    data = yf.download(symbol, start=start_date, end=end_date)
-    data['RowIndex'] = range(len(data))  # 给每一行添加索引，方便后面调用
+    # data = yf.download(symbol, start=start_date, end=end_date, auto_adjust=False)
+    csv_path = "output/csv/history_k_data.csv_%s_%s_%s.csv" % (symbol, start_date, end_date)
+    # 尝试读取已有的csv
+    if os.path.exists(csv_path):
+        data = pd.read_csv(csv_path)
+    # 若不存在，从baostock搜索，并将结果集输出到csv
+    else:  
+        data = baostock_get_data(symbol, start_date, end_date)
+        data['RowIndex'] = range(len(data))  # 给每一行添加索引，方便后面调用
+        data.to_csv(csv_path, encoding="gbk", index=False)
     print(data.head())  # 不加参数，默认显示5行
 
     ########## 执行交易策略 ##########
@@ -114,4 +173,5 @@ if __name__ == "__main__":
 
     # 编译输入列表的每只股票，计算策略收益
     for stock_info in get_stock_list("input/Stock_list.csv"):
-        main(stock_info, strategy)
+        if not (stock_info['baostock_available'] == 'N'):
+            main(stock_info, strategy)
