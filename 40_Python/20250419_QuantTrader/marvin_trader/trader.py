@@ -4,16 +4,25 @@ import pandas as pd
 import baostock as bs
 import matplotlib.pyplot as plt
 from strategies import *
+from csv_data_proc import *
 
 ########################## 参数设置 ##########################
+
+# 是否更新数据库
+update_database = True
+# update_database = False
+
+# 更新数据库的时间范围
+update_database_from = "2025-5-10"
+update_database_to = "2025-5-30"
 
 # 是否显示股价图
 # show_plot = True
 show_plot = False
 
 # 是否执行轮动策略
-rotation = True
-# rotation = False
+# rotation = True
+rotation = False
 
 # 是否每次重新下载股票数据
 # 更改K线频率后，需要重新下载数据
@@ -93,7 +102,7 @@ rotation_dates = [
 
 ##############################################################
 
-def baostock_get_data(symbol, start_date, end_date):
+def baostock_get_data(symbol, start_date, end_date, csv_path=None):
 
     #### 登陆系统 ####
     lg = bs.login()
@@ -132,6 +141,11 @@ def baostock_get_data(symbol, start_date, end_date):
     result["volume"] = pd.to_numeric(result["volume"])
     result["amount"] = pd.to_numeric(result["amount"])
     result["turn"] = pd.to_numeric(result["turn"])
+
+    if csv_path:
+        data_to_write = result.iloc[:]
+        data_to_write['RowIndex'] = range(len(data_to_write))  # 给每一行添加索引，方便后面调用
+        data_to_write.to_csv(csv_path, encoding="gbk", index=False)
 
     return result
 
@@ -207,17 +221,31 @@ def main(stock_info, strategy, rotation=False):
         symbol_list.append(symbol)
 
         # 以下部分仅针对一只股票操作：
+        # 更新数据库
+        if update_database:
+            print("Updating database: %s from %s to %s..." % (symbol, update_database_from, update_database_to))
+            # 清理旧的csv文件
+            os.system("del /q %s\\*%s*.csv" % (newdata_dir, symbol))
+            # 下载新的csv文件
+            new_database_name = "history_k_data_%s_%s_%s.csv" % (symbol, update_database_from, update_database_to)
+            new_database_path = os.path.join(newdata_dir, new_database_name)
+            baostock_get_data(symbol, update_database_from, update_database_to, new_database_path)
+            # 将新数据与原数据合并
+            merge_rawdata(symbol, keep_origin_data=False)
+
         # 获取股票的历史交易信息
         # data = yf.download(symbol, start=start_date, end=end_date, auto_adjust=False)
         csv_path = "output/csv_rawdata/history_k_data_%s_%s_%s.csv" % (symbol, start_date, end_date)
-        # 尝试读取已有的csv
+        # 尝试读取已有的（日期范围一致的）csv
         if (not re_download_data) and (os.path.exists(csv_path)):
             data = pd.read_csv(csv_path)
-        # 若不存在，从baostock搜索，并将结果集输出到csv
         else:  
-            data = baostock_get_data(symbol, start_date, end_date)
-            data['RowIndex'] = range(len(data))  # 给每一行添加索引，方便后面调用
-            data.to_csv(csv_path, encoding="gbk", index=False)
+            # 若不存在，尝试从已有总数据库中，提取特定日期范围的数据切片，并将结果集输出到csv
+            try:
+                data = split_rawdata(symbol, start_date, end_date)
+            # 若提取失败，尝试从baostock搜索，并将结果集输出到csv
+            except:
+                data = baostock_get_data(symbol, start_date, end_date)
         # 如果未成功下载数据，会得到空的dataFrame，跳过
         if data.empty:
             print("WARNING: '%s' data download failed!\n" % symbol)
