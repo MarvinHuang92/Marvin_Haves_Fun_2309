@@ -26,9 +26,9 @@ class Strategy():
         # data['Daily_Return'] = data['pctChg'] / 100.0  # for baostock (百分比，需要除以100)
         # 考虑操作窗口的涨跌幅
         # 今开->今收
-        data['Rivised_Return_01'] = (data['Close'] - data['Open']) / data['Open']
+        data['Buy_Return'] = (data['Close'] - data['Open']) / data['Open']
         # 昨收->今开
-        data['Rivised_Return_10'] = (data['Open'] - data['Close'].shift(1)) / data['Close'].shift(1)
+        data['Sell_Return'] = (data['Open'] - data['Close'].shift(1)) / data['Close'].shift(1)
         # 计算过去N个交易日平均涨跌幅
         # data['Sum_Return'] = (data['Close'] - data['Close'].shift(self.avg_period)) / data['Close'].shift(self.avg_period)
         # data['Avg_Return'] = data['Sum_Return'] / self.avg_period
@@ -53,14 +53,14 @@ class Strategy():
         
         # 昨日空仓，今早买入：收益=今收-今开
         if data['OptCode'] == 2:
-            return data['Rivised_Return_01']
+            return data['Buy_Return']
         # 昨日持有，今早卖出：收益=今开-昨收
         elif data['OptCode'] == 1:
-            return data['Rivised_Return_10']
+            return data['Sell_Return']
         # 两天都持有：收益=今收-昨收
         elif data['OptCode'] == 3:
             return data['Daily_Return']
-        # 两天都空仓，收益=0
+        # 两天都空仓，或数据不全时，收益=0
         else: # data['OptCode'] == 0:
             return 0
 
@@ -74,7 +74,7 @@ class Strategy():
             data['Strategy_Return'] = data['Signal'].shift(1) * data['Daily_Return']
 
         # 考虑操作窗口，计算当天收益率
-        else: # self.Rivise_Return:
+        else: # elif self.Rivise_Return:
             data['OptCode'] = data['Signal'].shift(1) * 2 + data['Signal'].shift(2)
             data['Strategy_Return'] = data.apply(lambda data: self.calcRivisedReturn(data), axis=1)
         

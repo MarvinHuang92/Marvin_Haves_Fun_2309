@@ -354,6 +354,8 @@ def main(stock_info, strategy, rotation=False):
             # 向总表中添加个股数据
             data_assembled["Daily_Return_%d" % stoke_index] = data["Daily_Return"]
             data_assembled["Avg_Return_%d" % stoke_index] = data["Avg_Return"]
+            data_assembled["Buy_Return_%d" % stoke_index] = data["Buy_Return"]
+            data_assembled["Sell_Return_%d" % stoke_index] = data["Sell_Return"]
     
         # 第二轮计算：基于总表，计算选股信号Choice
         data_assembled["Choice"] = 0  # 选中第几只股票，0表示空仓（默认）
