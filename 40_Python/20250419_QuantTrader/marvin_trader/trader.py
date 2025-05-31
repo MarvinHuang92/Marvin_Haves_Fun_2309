@@ -4,6 +4,7 @@ import pandas as pd
 import baostock as bs
 import matplotlib.pyplot as plt
 from strategies import *
+from strategies_rot import *
 from csv_data_proc import *
 
 ########################## 参数设置 ##########################
@@ -48,7 +49,7 @@ rotation_symbol_list = [
 
     # 综企指数成分股
     "sz.000532",  # 华金资本
-    "sz.000833",  # 粤桂股份
+    # "sz.000833",  # 粤桂股份
 
     # "sz.511260",  # 军工ETF，无数据
 
@@ -269,16 +270,8 @@ def main(stock_info, strategy, rotation=False):
             data = strategy.calcPosition(data)
 
             ########## 回测 ##########
-            # 计算策略收益
-            # 收益率 = 今天涨幅*仓位（data['Signal']表示仓位）
-            # 若今天跌了，收益率为负
-            # 若今天空仓，收益率=0
-            # shift(1)将data向下平移一行，第一行留空NaN
-            data['Strategy_Return'] = data['Signal'].shift(1) * data['Daily_Return']
-            
-            # 计算累计收益
-            # cumprod() 累计做乘法，可以体现复利
-            data['Cumulative_Return'] = (1 + data['Strategy_Return']).cumprod()
+            # 计算策略收益和累计收益
+            data = strategy.calcStrategyReturn(data)
             print("Stock '%s' from %s to %s" % (symbol, start_date, end_date))
             print("Final Return: %.4f\n" % data.iloc[-1]['Cumulative_Return'])
 
@@ -367,13 +360,8 @@ def main(stock_info, strategy, rotation=False):
         data_assembled = strategy.calcChoice(data_assembled, num=stoke_index)
 
         ########## 回测 ##########
-        # 计算策略收益
-        # 收益率 = 目标股票今天的涨幅（data['Choice']表示股票序号，0为空仓）
-        # data['Strategy_Return'] 已经在strategy class中计算
-        
-        # 计算累计收益
-        # cumprod() 累计做乘法，可以体现复利
-        data_assembled['Cumulative_Return'] = (1 + data_assembled['Strategy_Return']).cumprod()
+        # 第三轮计算：今日收和累计收益
+        data_assembled = strategy.calcStrategyReturn(data_assembled)
         print("Stock '%s' from %s to %s" % (str(symbol_list), start_date, end_date))
         print("Final Return: %.4f\n" % data_assembled.iloc[-1]['Cumulative_Return'])
 
