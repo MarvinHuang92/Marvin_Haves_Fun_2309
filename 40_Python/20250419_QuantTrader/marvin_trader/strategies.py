@@ -17,12 +17,18 @@ class Strategy():
     def __init__(self, avg_near, avg_far):
         self.AvgDays_Near = avg_near
         self.AvgDays_Far = avg_far
+        self.Rivise_Return = True
         self.avg_period = 1
     
     def calcCommonInfo(self, data):
-        # 计算相较昨日的涨跌幅
+        # 计算相较昨日的涨跌幅（昨收->今收）
         data['Daily_Return'] = data['Close'].pct_change(fill_method=None)  # for yfinance
         # data['Daily_Return'] = data['pctChg'] / 100.0  # for baostock (百分比，需要除以100)
+        # 考虑操作窗口的涨跌幅
+        # 今开->今收
+        data['Rivised_Return_01'] = (data['Close'] - data['Open']) / data['Open']
+        # 昨收->今开
+        data['Rivised_Return_10'] = (data['Open'] - data['Close'].shift(1)) / data['Close'].shift(1)
         # 计算过去N个交易日平均涨跌幅
         # data['Sum_Return'] = (data['Close'] - data['Close'].shift(self.avg_period)) / data['Close'].shift(self.avg_period)
         # data['Avg_Return'] = data['Sum_Return'] / self.avg_period
@@ -40,12 +46,38 @@ class Strategy():
         data['Cumulative_Return'] = (1 + data['Strategy_Return']).cumprod()
         return data
 
+    def calcRivisedReturn(self, data):
+        # 假设交易时间窗口为集合竞价时，如果当晚决定交易，次日收益率需要修正
+        # OptCode = 前天Signal+昨天Signal*2
+        # 00 -> 0, 01 -> 2, 10 -> 1, 11 -> 3
+        
+        # 昨日空仓，今早买入：收益=今收-今开
+        if data['OptCode'] == 2:
+            return data['Rivised_Return_01']
+        # 昨日持有，今早卖出：收益=今开-昨收
+        elif data['OptCode'] == 1:
+            return data['Rivised_Return_10']
+        # 两天都持有：收益=今收-昨收
+        elif data['OptCode'] == 3:
+            return data['Daily_Return']
+        # 两天都空仓，收益=0
+        else: # data['OptCode'] == 0:
+            return 0
+
     def calcStrategyReturn(self, data):
-        # 计算今日收益率 = 今天涨幅*仓位（data['Signal']表示仓位）
-        # 若今天跌了，收益率为负
-        # 若今天空仓，收益率=0
-        # shift(1)将data向下平移一行，第一行留空NaN
-        data['Strategy_Return'] = data['Signal'].shift(1) * data['Daily_Return']
+        # 简单算法，不考虑操作窗口，收益=今收-昨收
+        if not self.Rivise_Return:
+            # 计算今日收益率 = 今天涨幅*仓位（data['Signal']表示仓位）
+            # 若今天跌了，收益率为负
+            # 若今天空仓，收益率=0
+            # shift(1)将data向下平移一行，第一行留空NaN
+            data['Strategy_Return'] = data['Signal'].shift(1) * data['Daily_Return']
+
+        # 考虑操作窗口，计算当天收益率
+        else: # self.Rivise_Return:
+            data['OptCode'] = data['Signal'].shift(1) * 2 + data['Signal'].shift(2)
+            data['Strategy_Return'] = data.apply(lambda data: self.calcRivisedReturn(data), axis=1)
+        
         # 计算累计收益
         data = self.calcCumulativeReturn(data)
         return data
