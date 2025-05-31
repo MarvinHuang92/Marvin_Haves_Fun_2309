@@ -9,6 +9,9 @@ from csv_data_proc import *
 
 ########################## 参数设置 ##########################
 
+#单次交易成本
+trade_cost = 0.0004
+
 # 是否更新数据库
 # update_database = True
 update_database = False
@@ -39,6 +42,7 @@ rotation_symbol_list = [
     # "sh.000852",  # 中证1000
     # "sz.399006",  # 创业板指
     # "sz.399249",  # 综企指数
+    # "sz.399296",  # 创成长
     # "sz.399303",  # 国证2000
     "sz.399673",  # 创业板50
     # "sz.399905",  # 中证500
@@ -299,12 +303,20 @@ def main(stock_info, strategy, rotation=False):
             # plot 1:绘制股价和移动平均线
             plt.subplot(2, 1, 1)
             plt.plot(data['Close'], label='Close Price')
-            plt.plot(data['MA_Near'], label='%d-day Moving Average' % strategy.AvgDays_Near)
-            plt.plot(data['MA_Far'], label='%d-day Moving Average' % strategy.AvgDays_Far)
+            if strategy.name == "RollingMinMax":
+                plt.plot(data['History_Min'], label='%d-day Min Price' % strategy.rolling_window)
+                plt.plot(data['History_Max'], label='%d-day Max Price' % strategy.rolling_window)
+            else:
+                plt.plot(data['MA_Near'], label='%d-day Moving Average' % strategy.AvgDays_Near)
+                plt.plot(data['MA_Far'], label='%d-day Moving Average' % strategy.AvgDays_Far)
 
             # 标记买卖信号
-            plt.scatter(data[data['Signal'] == 1].index, data[data['Signal'] == 1]['MA_Near'], marker='^', color='g', label='Buy Signal')
-            plt.scatter(data[data['Signal'] == 0].index, data[data['Signal'] == 0]['MA_Near'], marker='v', color='r', label='Sell Signal')
+            if strategy.name == "RollingMinMax":
+                plt.scatter(data[data['Signal'] == 1].index, data[data['Signal'] == 1]['Close'], marker='^', color='g', label='Buy Signal')
+                plt.scatter(data[data['Signal'] == 0].index, data[data['Signal'] == 0]['Close'], marker='v', color='r', label='Sell Signal')
+            else:
+                plt.scatter(data[data['Signal'] == 1].index, data[data['Signal'] == 1]['MA_Near'], marker='^', color='g', label='Buy Signal')
+                plt.scatter(data[data['Signal'] == 0].index, data[data['Signal'] == 0]['MA_Near'], marker='v', color='r', label='Sell Signal')
 
             plt.title("Stock Price with Moving Averages")
             # 不显示第一张图的x轴刻度和label
@@ -451,9 +463,12 @@ if __name__ == "__main__":
         # strategy = StrategyMoveAvg(avg_near=10, avg_far=60)
         # 昨日收益率二值化策略
         # strategy = StrategyYesterdayReturnBinarized()
+        # 移动窗口高抛低吸策略
+        strategy = StrategyRollingMinMax()
         # 连续上涨周期，或超跌反弹策略
-        strategy = StrategyCustomize()
+        # strategy = StrategyCustomize()
 
+        strategy.trade_cost = trade_cost
         for stock_info in get_stock_list("input/Stock_list.csv"):
             if not (stock_info['baostock_available'] == 'N'):
                 main(stock_info, strategy)
@@ -470,6 +485,7 @@ if __name__ == "__main__":
     # 轮动策略
     else:
         strategy = StrategyMultiTargetRotation()
+        strategy.trade_cost = trade_cost
         for date in rotation_dates:
             stock_info_for_rotation = []
             for rotation_symbol in rotation_symbol_list:

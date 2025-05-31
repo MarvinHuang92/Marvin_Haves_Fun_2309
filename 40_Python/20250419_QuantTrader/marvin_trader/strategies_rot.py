@@ -43,17 +43,17 @@ class StrategyRotation(Strategy):
                 return '0'
             # 昨日空仓，今早买入：收益=今收-今开
             elif col_index_striped_k2 == '':
-                return data['Buy_Return_' + col_index_striped_k1]
+                return data['Buy_Return_' + col_index_striped_k1] - self.trade_cost
             # 昨日持有，今早卖出：收益=今开-昨收
             elif col_index_striped_k1 == '':
-                return data['Sell_Return_' + col_index_striped_k2]
+                return data['Sell_Return_' + col_index_striped_k2] - self.trade_cost
             # 两天都持有同一只股票：收益=今收-昨收
             elif col_index_striped_k2 == col_index_striped_k1:
                 return data[col_index_k1]
             # 更换股票：视作先卖掉昨日持有的，再买入今天的
             else:
-                return (((1 + data['Sell_Return_' + col_index_striped_k2]) *
-                        (1 + data['Buy_Return_' + col_index_striped_k1])) - 1)
+                return (((1 + data['Sell_Return_' + col_index_striped_k2] - self.trade_cost) *
+                        (1 + data['Buy_Return_' + col_index_striped_k1] - self.trade_cost)) - 1)
 
     # 第一轮调用：仅计算单只股票涨幅信息 Daily_Return and Avg_Return
     def calcSingleStockReturn(self, data):

@@ -18,6 +18,7 @@ class Strategy():
         self.AvgDays_Near = avg_near
         self.AvgDays_Far = avg_far
         self.Rivise_Return = True
+        self.trade_cost = 0
         self.avg_period = 1
     
     def calcCommonInfo(self, data):
@@ -53,10 +54,10 @@ class Strategy():
         
         # 昨日空仓，今早买入：收益=今收-今开
         if data['OptCode'] == 2:
-            return data['Buy_Return']
+            return data['Buy_Return'] - self.trade_cost
         # 昨日持有，今早卖出：收益=今开-昨收
         elif data['OptCode'] == 1:
-            return data['Sell_Return']
+            return data['Sell_Return'] - self.trade_cost
         # 两天都持有：收益=今收-昨收
         elif data['OptCode'] == 3:
             return data['Daily_Return']
@@ -120,7 +121,50 @@ class StrategyYesterdayReturnBinarized(Strategy):
         # 昨天跌了，今天空仓
         data.loc[data['Daily_Return'] >= X_up, 'Signal'] = 1  # 以昨日涨幅为信号，涨幅超过止损线则满仓，否则空仓
         return data
-    
+
+
+# 移动窗口高抛低吸策略
+class StrategyRollingMinMax(Strategy):
+    def __init__(self, avg_near=5, avg_far=30):
+        super().__init__(avg_near, avg_far)
+        self.name = "RollingMinMax"
+        self.rolling_window = 300  # 统计过去N天的价格区间
+
+    # 计算仓位
+    def calcPosition(self, data):
+        Buy_ratio = 0.03  # 在最低价以上多少比例买入
+        Sell_ratio = 0.02  # 在最高价以下多少比例卖出
+        data = self.calcCommonInfo(data)
+        
+        # 添加移动最大值和最小值列
+        data['History_Max'] = data['Close'].rolling(window=self.rolling_window).max()
+        data['History_Min'] = data['Close'].rolling(window=self.rolling_window).min()
+
+        # 生成买卖信号
+        # data.loc[(data['Close'] <= data['History_Min'] * (1 + Buy_ratio)), 'Signal'] = 1
+        # data.loc[(data['Close'] >= data['History_Max'] * (1 - Sell_ratio)), 'Signal'] = 0
+
+        # 限制条件
+        # 历史价格窗口未生成时，策略不生效，认为始终满仓，策略收益率=实际收益率
+        data.loc[data['RowIndex'] < self.rolling_window - 1, 'Signal'] = 1
+        
+        # 遍历所有行
+        for i in range(self.rolling_window - 1, len(data)):
+            r_close = data.at[i, 'Close']
+            r_min = data.at[i, 'History_Min']
+            r_max = data.at[i, 'History_Max']
+            # 买入条件
+            if r_close <= r_min * (1 + Buy_ratio):
+                data.at[i, 'Signal'] = 1
+            # 卖出条件
+            elif r_close >= r_max * (1 - Sell_ratio):
+                data.at[i, 'Signal'] = 0
+            # 不满足买卖两个条件的，将继承上一行的Signal值
+            else:
+                data.at[i, 'Signal'] = data.at[i - 1, 'Signal']
+        
+        return data
+
 
 # 自定义策略
 class StrategyCustomize(Strategy):
