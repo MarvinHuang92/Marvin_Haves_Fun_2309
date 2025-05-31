@@ -9,8 +9,8 @@ from csv_data_proc import *
 ########################## 参数设置 ##########################
 
 # 是否更新数据库
-update_database = True
-# update_database = False
+# update_database = True
+update_database = False
 
 # 更新数据库的时间范围
 update_database_from = "2025-5-10"
@@ -28,6 +28,9 @@ rotation = False
 # 更改K线频率后，需要重新下载数据
 # re_download_data = True
 re_download_data = False
+
+############### 如果采用轮动策略，将使用如下设置 ###############
+############### 否则，将使用 input/Stock_list.csv 的设置 ######
 
 # 轮动个股
 rotation_symbol_list = [
@@ -142,10 +145,12 @@ def baostock_get_data(symbol, start_date, end_date, csv_path=None):
     result["amount"] = pd.to_numeric(result["amount"])
     result["turn"] = pd.to_numeric(result["turn"])
 
+    # 给每一行添加索引，方便后面调用
+    result = result.reset_index(drop=True)  # 重置原始索引，否则切片的数据作比较时，原始索引不同，会出问题
+    result['RowIndex'] = range(len(result.iloc[:]))  # 添加新索引列
+
     if csv_path:
-        data_to_write = result.iloc[:]
-        data_to_write['RowIndex'] = range(len(data_to_write))  # 给每一行添加索引，方便后面调用
-        data_to_write.to_csv(csv_path, encoding="gbk", index=False)
+        result.to_csv(csv_path, encoding="gbk", index=False)
 
     return result
 
@@ -245,7 +250,7 @@ def main(stock_info, strategy, rotation=False):
                 data = split_rawdata(symbol, start_date, end_date)
             # 若提取失败，尝试从baostock搜索，并将结果集输出到csv
             except:
-                data = baostock_get_data(symbol, start_date, end_date)
+                data = baostock_get_data(symbol, start_date, end_date, csv_path)
         # 如果未成功下载数据，会得到空的dataFrame，跳过
         if data.empty:
             print("WARNING: '%s' data download failed!\n" % symbol)
@@ -313,7 +318,7 @@ def main(stock_info, strategy, rotation=False):
             # plot 2:绘制累计收益曲线
             plt.subplot(2, 1, 2)
             plt.plot(data['date'], data['Cumulative_Return'], label='Strategy Cumulative Return', color='b')
-            plt.plot(data['Close'] / data['Close'].iloc[0], label='Stock Cumulative Return', color='g')
+            plt.plot(data['date'], data['Close'] / data['Close'].iloc[0], label='Stock Cumulative Return', color='g')
             plt.title("Cumulative Return of Strategy vs. Stock")
             plt.xlabel("Date")
             plt.ylabel("Cumulative Return")
@@ -410,8 +415,8 @@ def main(stock_info, strategy, rotation=False):
         plt.subplot(2, 1, 2)
         plt.plot(data_assembled['date'], data_assembled['Cumulative_Return'], label='Strategy Cumulative Return', color='r')
         for i in range(stoke_index):
-            plt.plot(data_list[i]['Close'] / data_list[i]['Close'].iloc[0], label='Stock Cumulative Return %s' % str(i+1), 
-                     color=color_list[i % len(color_list)])
+            plt.plot(data_assembled['date'], data_list[i]['Close'] / data_list[i]['Close'].iloc[0], 
+                     label='Stock Cumulative Return %s' % str(i+1), color=color_list[i % len(color_list)])
         plt.title("Cumulative Return of Strategy vs. Stock")
         plt.xlabel("Date")
         plt.ylabel("Cumulative Return")

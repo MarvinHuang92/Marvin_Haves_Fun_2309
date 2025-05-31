@@ -117,7 +117,8 @@ def split_rawdata(symbol, start_date, end_date):
     
     # 写入文件，这里的日期为yyyy-m-d格式
     output_filename = "%s%s_%s_%s.csv" % (fname_prefix, symbol, start_date, end_date)
-    data_output['RowIndex'] = range(len(data_output))  # 重写索引
+    data_output = data_output.reset_index(drop=True)  # 重置原始索引
+    data_output['RowIndex'] = range(len(data_output.iloc[:]))  # 重写新索引列
     data_output.to_csv(os.path.join(output_dir, output_filename), encoding="gbk", index=False)
 
     print('Data splited successfully: "%s\\%s"\n' % (output_dir, output_filename))
@@ -180,7 +181,8 @@ def merge_rawdata(symbol, keep_origin_data=True):
     output_s_date_str = convert_date_format(str(output_s_date), output_format="yyyy-m-d")
     output_e_date_str = convert_date_format(str(output_e_date), output_format="yyyy-m-d")
     data_merged_filename = "%s%s_%s_%s.csv" % (fname_prefix, symbol, output_s_date_str, output_e_date_str)
-    data_merged['RowIndex'] = range(len(data_merged))  # 重写索引
+    data_merged = data_merged.reset_index(drop=True)  # 重置原始索引
+    data_merged['RowIndex'] = range(len(data_merged.iloc[:]))  # 重写新索引列
     data_merged.to_csv(os.path.join(work_dir, data_merged_filename), encoding="gbk", index=False)
 
     print("Data merged successfully: from %d to %d\n" % (output_s_date, output_e_date))
