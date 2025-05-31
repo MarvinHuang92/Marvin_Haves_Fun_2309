@@ -91,11 +91,13 @@ class StrategyMultiTargetRotation(StrategyRotation):
         self.name = "MultiTargetRotation"
 
         # 平均涨跌幅计算天数，越大越稳健
-        self.avg_period = 4
+        self.avg_period = 20
 
     # 第二轮调用：计算选择哪只股票
     def calcChoice(self, data, num=1):
-        X_up = 0.0145  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
+        # 设置止损线：正值：稳健，负值：激进，设为-1表示没有止损
+        X_up = -0.1  # 当日止损线
+        R_up = 0.014  # 平均涨跌幅止损线
         
         # 比较所有个股的平均涨幅，选取最大值所在列
         # AR = Avg_Return, DR = Daily_Return
@@ -115,6 +117,6 @@ class StrategyMultiTargetRotation(StrategyRotation):
         data['DR_on_ARMax_index'] = pd.to_numeric(data['DR_on_ARMax_index'])
         
         # 生成选股信号：若平均涨幅最大的个股，对应的当天涨幅超过止损线，输出其序号到Choice，否则输出0（默认值）
-        data.loc[data['DR_on_ARMax_index'] >= X_up, 'Choice'] = data['ARMax_index']
+        data.loc[(data['DR_on_ARMax_index'] >= X_up) & (data['Avg_Return_Max'] >= R_up), 'Choice'] = data['ARMax_index']
 
         return data

@@ -18,12 +18,12 @@ update_database_from = "2025-5-10"
 update_database_to = "2025-5-30"
 
 # 是否显示股价图
-# show_plot = True
-show_plot = False
+show_plot = True
+# show_plot = False
 
 # 是否执行轮动策略
-# rotation = True
-rotation = False
+rotation = True
+# rotation = False
 
 # 是否每次重新下载股票数据
 # 更改K线频率后，需要重新下载数据
@@ -35,20 +35,25 @@ re_download_data = False
 
 # 轮动个股
 rotation_symbol_list = [
-    # "sh.000300",  # 沪深300
+    "sh.000300",  # 沪深300
     # "sh.000852",  # 中证1000
     # "sz.399006",  # 创业板指
     # "sz.399249",  # 综企指数
     # "sz.399303",  # 国证2000
+    "sz.399673",  # 创业板50
     # "sz.399905",  # 中证500
-    "sz.399967",  # 中证军工
+    # "sz.399967",  # 中证军工
     # "sh.600489",  # 中金黄金
     # "sh.600828",  # 茂业商业
     # "sh.601988",  # 中国银行
     # "sz.H30269",  # 红利低波指数，无数据
+    # "sh.600900",  # 长江电力
+    # "sh.600919",  # 江苏银行
+
+    # "sh.000049",
 
     # 综企指数成分股
-    "sz.000532",  # 华金资本
+    # "sz.000532",  # 华金资本
     # "sz.000833",  # 粤桂股份
 
     # "sz.511260",  # 军工ETF，无数据
@@ -75,12 +80,13 @@ rotation_symbol_list = [
 rotation_dates = [
     # 全周期
     # ["2014-1-1", "2025-4-30"],
+    # ["2019-1-1", "2025-4-30"],
 
     # 短周期
     # ["2025-1-1", "2025-5-9"],
     
     # 一年窗口期
-    ["2014-1-1", "2014-12-31"],
+    # ["2014-1-1", "2014-12-31"],
     ["2015-1-1", "2015-12-31"],
     ["2016-1-1", "2016-12-31"],
     ["2017-1-1", "2017-12-31"],
@@ -442,11 +448,11 @@ if __name__ == "__main__":
     if not rotation:
         ########## 选择交易策略 ##########
         # 移动平均线策略
-        # strategy = StrategyMoveAvg(avg_near=1, avg_far=60)
+        # strategy = StrategyMoveAvg(avg_near=10, avg_far=60)
         # 昨日收益率二值化策略
-        strategy = StrategyYesterdayReturnBinarized()
+        # strategy = StrategyYesterdayReturnBinarized()
         # 连续上涨周期，或超跌反弹策略
-        # strategy = StrategyCustomize()
+        strategy = StrategyCustomize()
 
         for stock_info in get_stock_list("input/Stock_list.csv"):
             if not (stock_info['baostock_available'] == 'N'):

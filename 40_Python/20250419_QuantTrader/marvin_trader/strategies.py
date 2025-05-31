@@ -124,15 +124,15 @@ class StrategyYesterdayReturnBinarized(Strategy):
 
 # 自定义策略
 class StrategyCustomize(Strategy):
-    def __init__(self, avg_near=5, avg_far=30):
+    def __init__(self, avg_near=10, avg_far=30):
         super().__init__(avg_near, avg_far)
         self.name = "Customize"  # dummy
 
     # 计算仓位
     def calcPosition(self, data):
-        self.avg_period = 4  # 平均涨跌幅计算天数
-        R_up = 0.01  # 平均涨幅阈值
-        X_up = 0.015  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
+        self.avg_period = 9  # 平均涨跌幅计算天数
+        R_up = 0.015  # 平均涨幅阈值
+        X_up = -0.03  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
         R_down = -0.005  # 平均跌幅阈值
         data = self.calcCommonInfo(data)
         
@@ -143,14 +143,18 @@ class StrategyCustomize(Strategy):
         # # 平均跌幅超过0.5%，且昨天为正收益，则买入，否则空仓
         # data.loc[(data['Avg_Return'] < R_down) & (data['Daily_Return'] >= X_up), 'Signal'] = 1
 
-        # 连续上涨策略：
+        # 连续上涨策略 * 移动均线：
         self.name = "ContinuousUptrend"
-        # 平均涨幅超过M，且昨天为正收益，则买入，否则空仓
-        data.loc[(data['Avg_Return'] > R_up) & (data['Daily_Return'] >= X_up), 'Signal'] = 1
+        # 平均涨幅超过R_up，且昨天为正收益，则买入，否则空仓
+        data.loc[(data['Avg_Return'] > R_up) & (data['Daily_Return'] >= X_up) & (data['MA_Near'] > data['MA_Far']), 'Signal'] = 1
 
         # # 连续上涨-超跌反弹组合策略：
         # self.name = "ContinuousUptrendOrOversoldRebound"
         # data.loc[((data['Avg_Return'] > R_up) | (data['Avg_Return'] < R_down)) & (data['Daily_Return'] >= X_up), 'Signal'] = 1
+
+        # 限制条件
+        # 长期均线未生成时，策略不生效，认为始终满仓，策略收益率=实际收益率
+        data.loc[data['RowIndex'] < self.AvgDays_Far, 'Signal'] = 1
 
         return data
     
