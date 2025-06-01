@@ -76,8 +76,9 @@ class StrategyRotation(Strategy):
         # 转换格式str -> float
         data['Strategy_Return'] = pd.to_numeric(data['Strategy_Return'])
 
-        # 计算累计收益
-        data = self.calcCumulativeReturn(data)
+        # 计算轮动策略的累计收益
+        # 但不计算原始个股的锁仓收益，因为轮动数据表中，只有第一只个股的收益率
+        data = self.calcCumulativeReturn(data, calc_stock_CR=False)
 
         return data
     

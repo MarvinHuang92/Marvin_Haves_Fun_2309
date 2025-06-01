@@ -7,7 +7,15 @@
 策略需在data中添加如下列:
 "Signal" 列: 表示下一个交易日的仓位, 0为空仓, 1为满仓
 "Strategy_Return" 列: 每个交易日的收益率, 注意: 与上一个交易日的仓位相关
-"Cumulative_Return" 列: 累计收益率
+"Cumulative_Return" 列: 策略累计收益率
+"Stock_Cumul_Return" 列: 锁仓累计收益率
+
+以下两行暂时不需要, 节约算力:
+"Abnormal_Return_Rel" 列: 当天相对超额收益率 (策略收益 Strategy_Return / 锁仓收益 Daily_Return)-1
+"Abnormal_Return_Abs" 列: 当天绝对超额收益率 (策略收益 Strategy_Return - 锁仓收益 Daily_Return)
+
+"Cumulative_Abnormal_Return": 累计相对超额收益 (CAR), 表格中不计算, 只在打印log时计算:
+最后一天的 Cumulative_Return / Stock_Cumul_Return - 1
 
 """
 
@@ -41,10 +49,15 @@ class Strategy():
         data['Signal'] = 0
         return data
     
-    def calcCumulativeReturn(self, data):
+    def calcCumulativeReturn(self, data, calc_stock_CR=True):
         # 计算累计收益
         # cumprod() 累计做乘法，可以体现复利
         data['Cumulative_Return'] = (1 + data['Strategy_Return']).cumprod()
+        # 仅在非轮动策略时计算
+        if calc_stock_CR:
+            data['Stock_Cumul_Return'] = (1 + data['Daily_Return']).cumprod()
+            # data['Abnormal_Return_Rel'] = data['Strategy_Return'] / data['Daily_Return'] - 1
+            # data['Abnormal_Return_Abs'] = data['Strategy_Return'] - data['Daily_Return']
         return data
 
     def calcRivisedReturn(self, data):

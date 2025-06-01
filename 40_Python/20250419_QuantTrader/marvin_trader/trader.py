@@ -13,8 +13,8 @@ from csv_data_proc import *
 trade_cost = 0.0004
 
 # 是否更新数据库
-update_database = True
-# update_database = False
+# update_database = True
+update_database = False
 
 # 更新数据库的时间范围
 update_database_from = "2010-1-1"
@@ -211,6 +211,8 @@ def main(stock_info, strategy, rotation=False):
     global quick_test_start_date
     global quick_test_end_date
     global quick_test_C_Return
+    global quick_test_S_Return
+    global quick_test_CAR
 
     # # 获取股票数据，后缀上海=SS，深圳=SZ
     # # 多只股票可定义为列表
@@ -287,13 +289,21 @@ def main(stock_info, strategy, rotation=False):
             ########## 回测 ##########
             # 计算策略收益和累计收益
             data = strategy.calcStrategyReturn(data)
+            strategy_ret = data.iloc[-1]['Cumulative_Return']
+            stock_ret = data.iloc[-1]['Stock_Cumul_Return']
+            cumul_ab_ret = strategy_ret / stock_ret - 1
             print("Stock '%s' from %s to %s" % (symbol, start_date, end_date))
-            print("Final Return: %.4f\n" % data.iloc[-1]['Cumulative_Return'])
+            print("Strategy Return: %.4f" % strategy_ret)
+            print("Stock Return   : %.4f" % stock_ret)
+            print("Abnormal Return: %.4f" % cumul_ab_ret)
+            print("")
 
             quick_test_symbol.append(symbol)
             quick_test_start_date.append(start_date)
             quick_test_end_date.append(end_date)
-            quick_test_C_Return.append("%.4f" % data.iloc[-1]['Cumulative_Return'])
+            quick_test_C_Return.append("%.4f" % strategy_ret)
+            quick_test_S_Return.append("%.4f" % stock_ret)
+            quick_test_CAR.append("%.4f" % cumul_ab_ret)
 
             # 输出包含该策略参数的csv
             csv_strategy_filename = "Strategy_Data_%s_%s_%s_%s_Avg_%d_%d" % (strategy.name, symbol, start_date, end_date, 
@@ -334,7 +344,8 @@ def main(stock_info, strategy, rotation=False):
             # plot 2:绘制累计收益曲线
             plt.subplot(2, 1, 2)
             plt.plot(data['date'], data['Cumulative_Return'], label='Strategy Cumulative Return', color='b')
-            plt.plot(data['date'], data['Close'] / data['Close'].iloc[0], label='Stock Cumulative Return', color='g')
+            # plt.plot(data['date'], data['Close'] / data['Close'].iloc[0], label='Stock Cumulative Return', color='g')
+            plt.plot(data['date'], data['Stock_Cumul_Return'], label='Stock Cumulative Return', color='g')
             plt.title("Cumulative Return of Strategy vs. Stock")
             plt.xlabel("Date")
             plt.ylabel("Cumulative Return")
@@ -387,14 +398,16 @@ def main(stock_info, strategy, rotation=False):
         ########## 回测 ##########
         # 第三轮计算：今日收和累计收益
         data_assembled = strategy.calcStrategyReturn(data_assembled)
+        strategy_ret = data_assembled.iloc[-1]['Cumulative_Return']
         print("Stock '%s' from %s to %s" % (str(symbol_list), start_date, end_date))
-        print("Final Return: %.4f\n" % data_assembled.iloc[-1]['Cumulative_Return'])
+        print("Final Return: %.4f" % strategy_ret)
+        print("")
 
         quick_test_symbol.append(symbol_list[0])
         quick_test_symbol_2.append(symbol_list[1])
         quick_test_start_date.append(start_date)
         quick_test_end_date.append(end_date)
-        quick_test_C_Return.append("%.4f" % data_assembled.iloc[-1]['Cumulative_Return'])
+        quick_test_C_Return.append("%.4f" % strategy_ret)
 
         # 输出包含该策略参数的csv
         csv_rotation_filename = "RotationStrategy_Data_%s_%s_%s" % (str(symbol_list), start_date, end_date)
@@ -456,10 +469,12 @@ if __name__ == "__main__":
 
     # 快速测试：数据初始化
     quick_test_symbol = []
-    quick_test_symbol_2 = []  # 仅用于轮动测试
+    quick_test_symbol_2 = []  # 仅用于轮动测试，暂时支持2只个股，超过2只的不打印名字
     quick_test_start_date = []
     quick_test_end_date = []
-    quick_test_C_Return = []
+    quick_test_C_Return = []  # 策略累计收益
+    quick_test_S_Return = []  # 锁仓累计收益，轮动策略不包含
+    quick_test_CAR = []       # 累计超额收益 Cumulative_Abnormal_Return，轮动策略不包含
 
     # 针对输入列表的每只股票，计算策略收益
     if not rotation:
@@ -483,7 +498,9 @@ if __name__ == "__main__":
             "symbol": quick_test_symbol,
             "start_date": quick_test_start_date,
             "end_date": quick_test_end_date,
-            "Final_Return": quick_test_C_Return,
+            "Strategy_Return": quick_test_C_Return,
+            "Stock_Return": quick_test_S_Return,
+            "CAR": quick_test_CAR,
         })
         df_quick_test.to_csv("quick_test_result_1.csv", encoding="gbk", index=False)
         
