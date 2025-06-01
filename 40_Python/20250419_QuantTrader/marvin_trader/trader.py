@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import time
 # import yfinance as yf
 import baostock as bs
 import matplotlib.pyplot as plt
@@ -28,8 +29,8 @@ update_database_to = "2025-5-30"
 show_plot = False
 
 # 是否执行轮动策略
-# rotation = True
-rotation = False
+rotation = True
+# rotation = False
 
 # 是否每次重新下载股票数据
 # 更改K线频率后，需要重新下载数据
@@ -169,7 +170,7 @@ def baostock_get_data(symbol, start_date, end_date, csv_path=None):
     result['RowIndex'] = range(len(result.iloc[:]))  # 添加新索引列
 
     if csv_path:
-        result.to_csv(csv_path, encoding="gbk", index=False)
+        write_to_csv(result, csv_path)
 
     return result
 
@@ -182,8 +183,17 @@ def create_output_dir():
         os.mkdir("output/csv_rawdata")
     if not os.path.isdir("output/csv_strategy"):
         os.mkdir("output/csv_strategy")
+    if not os.path.isdir("log"):
+        os.mkdir("log")
     if not os.path.isdir("log/statistics"):
         os.mkdir("log/statistics")
+
+# 允许将 DataFrame 写到多个csv文件
+def write_to_csv(df, output_path):
+    if not isinstance(output_path, list):
+        output_path = [output_path,]
+    for o_path in output_path:
+        df.to_csv(o_path, encoding="gbk", index=False)
 
 def get_stock_list(input_csv):
     # 忽略csv注释中的中文编码错误
@@ -327,7 +337,7 @@ def main(stock_info, strategy, rotation=False):
             # 输出包含该策略参数的csv
             csv_strategy_filename = "Strategy_Data_%s_%s_%s_%s_Avg_%d_%d" % (strategy.name, symbol, start_date, end_date, 
                                                                             strategy.AvgDays_Near, strategy.AvgDays_Far)
-            data.to_csv("output/csv_strategy/%s.csv" % csv_strategy_filename, encoding="gbk", index=False)
+            write_to_csv(data, "output/csv_strategy/%s.csv" % csv_strategy_filename)
 
             ########## 绘图 ##########
             plt.figure(figsize=(10, 8))
@@ -436,7 +446,7 @@ def main(stock_info, strategy, rotation=False):
 
         # 输出包含该策略参数的csv
         csv_rotation_filename = "RotationStrategy_Data_%s_%s_%s" % (str(symbol_list), start_date, end_date)
-        data_assembled.to_csv("output/csv_strategy/%s.csv" % csv_rotation_filename, encoding="gbk", index=False)
+        write_to_csv(data_assembled, "output/csv_strategy/%s.csv" % csv_rotation_filename)
 
         ########## 绘图 ##########
         plt.figure(figsize=(10, 8))
@@ -491,6 +501,7 @@ def main(stock_info, strategy, rotation=False):
 
 if __name__ == "__main__":
     create_output_dir()
+    timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime(time.time()))
 
     # 快速测试：数据初始化
     quick_test_symbol = []
@@ -531,7 +542,8 @@ if __name__ == "__main__":
             "CAR": quick_test_CAR,
             "Annual_Return": quick_test_A_Return,
         })
-        df_quick_test.to_csv("log/statistics/quick_test_result_1.csv", encoding="gbk", index=False)
+        write_to_csv(df_quick_test, ["log/statistics/%s_result_%s.csv" % (strategy.name, timestamp),
+                                     "log/quick_test_result_1.csv"])
         
     # 轮动策略
     else:
@@ -557,7 +569,8 @@ if __name__ == "__main__":
             "Final_Return": quick_test_C_Return,
             "Annual_Return": quick_test_A_Return,
         })
-        df_quick_test.to_csv("log/statistics/quick_test_result_2.csv", encoding="gbk", index=False)
+        write_to_csv(df_quick_test, ["log/statistics/%s_result_%s.csv" % (strategy.name, timestamp),
+                                     "log/quick_test_result_2.csv"])
     
     # 登出 baostock
     if Is_baostock_login:
