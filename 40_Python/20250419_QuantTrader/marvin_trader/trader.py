@@ -9,8 +9,11 @@ from csv_data_proc import *
 
 ########################## 参数设置 ##########################
 
-#单次交易成本
+# 单次交易成本
 trade_cost = 0.0004
+
+# 全年交易日
+annual_T_days = 243
 
 # 是否更新数据库
 # update_database = True
@@ -179,6 +182,8 @@ def create_output_dir():
         os.mkdir("output/csv_rawdata")
     if not os.path.isdir("output/csv_strategy"):
         os.mkdir("output/csv_strategy")
+    if not os.path.isdir("log/statistics"):
+        os.mkdir("log/statistics")
 
 def get_stock_list(input_csv):
     # 忽略csv注释中的中文编码错误
@@ -205,14 +210,22 @@ def get_stock_list(input_csv):
 
     return dict_from_df
 
+# 根据复利，计算年化收益
+def calcAnnualRet(final_ret, t_days):
+    # avg_daily_ret = final_ret**(1 / t_days) - 1
+    # annual_ret = (1 + avg_daily_ret)**annual_T_days
+    return final_ret**(annual_T_days / t_days)
+
 def main(stock_info, strategy, rotation=False):
     global quick_test_symbol
     global quick_test_symbol_2
     global quick_test_start_date
     global quick_test_end_date
+    global quick_test_T_Days
     global quick_test_C_Return
     global quick_test_S_Return
     global quick_test_CAR
+    global quick_test_A_Return
 
     # # 获取股票数据，后缀上海=SS，深圳=SZ
     # # 多只股票可定义为列表
@@ -289,21 +302,27 @@ def main(stock_info, strategy, rotation=False):
             ########## 回测 ##########
             # 计算策略收益和累计收益
             data = strategy.calcStrategyReturn(data)
+            t_days = len(data)
             strategy_ret = data.iloc[-1]['Cumulative_Return']
             stock_ret = data.iloc[-1]['Stock_Cumul_Return']
             cumul_ab_ret = strategy_ret / stock_ret - 1
+            annual_ret = calcAnnualRet(strategy_ret, t_days)
             print("Stock '%s' from %s to %s" % (symbol, start_date, end_date))
+            print("Trade Days     : %d" % t_days)
             print("Strategy Return: %.4f" % strategy_ret)
             print("Stock Return   : %.4f" % stock_ret)
             print("Abnormal Return: %.4f" % cumul_ab_ret)
+            print("Annual Return  : %.4f" % annual_ret)
             print("")
 
             quick_test_symbol.append(symbol)
             quick_test_start_date.append(start_date)
             quick_test_end_date.append(end_date)
+            quick_test_T_Days.append("%d" % t_days)
             quick_test_C_Return.append("%.4f" % strategy_ret)
             quick_test_S_Return.append("%.4f" % stock_ret)
             quick_test_CAR.append("%.4f" % cumul_ab_ret)
+            quick_test_A_Return.append("%.4f" % annual_ret)
 
             # 输出包含该策略参数的csv
             csv_strategy_filename = "Strategy_Data_%s_%s_%s_%s_Avg_%d_%d" % (strategy.name, symbol, start_date, end_date, 
@@ -398,16 +417,22 @@ def main(stock_info, strategy, rotation=False):
         ########## 回测 ##########
         # 第三轮计算：今日收和累计收益
         data_assembled = strategy.calcStrategyReturn(data_assembled)
+        t_days = len(data_assembled)
         strategy_ret = data_assembled.iloc[-1]['Cumulative_Return']
+        annual_ret = calcAnnualRet(strategy_ret, t_days)
         print("Stock '%s' from %s to %s" % (str(symbol_list), start_date, end_date))
-        print("Final Return: %.4f" % strategy_ret)
+        print("Trade Days   : %d" % t_days)
+        print("Final Return : %.4f" % strategy_ret)
+        print("Annual Return: %.4f" % annual_ret)
         print("")
 
         quick_test_symbol.append(symbol_list[0])
         quick_test_symbol_2.append(symbol_list[1])
         quick_test_start_date.append(start_date)
         quick_test_end_date.append(end_date)
+        quick_test_T_Days.append("%d" % t_days)
         quick_test_C_Return.append("%.4f" % strategy_ret)
+        quick_test_A_Return.append("%.4f" % annual_ret)
 
         # 输出包含该策略参数的csv
         csv_rotation_filename = "RotationStrategy_Data_%s_%s_%s" % (str(symbol_list), start_date, end_date)
@@ -472,9 +497,11 @@ if __name__ == "__main__":
     quick_test_symbol_2 = []  # 仅用于轮动测试，暂时支持2只个股，超过2只的不打印名字
     quick_test_start_date = []
     quick_test_end_date = []
+    quick_test_T_Days = []    # 交易日天数
     quick_test_C_Return = []  # 策略累计收益
     quick_test_S_Return = []  # 锁仓累计收益，轮动策略不包含
     quick_test_CAR = []       # 累计超额收益 Cumulative_Abnormal_Return，轮动策略不包含
+    quick_test_A_Return = []  # 年化收益
 
     # 针对输入列表的每只股票，计算策略收益
     if not rotation:
@@ -498,11 +525,13 @@ if __name__ == "__main__":
             "symbol": quick_test_symbol,
             "start_date": quick_test_start_date,
             "end_date": quick_test_end_date,
+            "T_Days": quick_test_T_Days,
             "Strategy_Return": quick_test_C_Return,
             "Stock_Return": quick_test_S_Return,
             "CAR": quick_test_CAR,
+            "Annual_Return": quick_test_A_Return,
         })
-        df_quick_test.to_csv("quick_test_result_1.csv", encoding="gbk", index=False)
+        df_quick_test.to_csv("log/statistics/quick_test_result_1.csv", encoding="gbk", index=False)
         
     # 轮动策略
     else:
@@ -524,9 +553,11 @@ if __name__ == "__main__":
             "symbol_2": quick_test_symbol_2,
             "start_date": quick_test_start_date,
             "end_date": quick_test_end_date,
+            "T_Days": quick_test_T_Days,
             "Final_Return": quick_test_C_Return,
+            "Annual_Return": quick_test_A_Return,
         })
-        df_quick_test.to_csv("quick_test_result_2.csv", encoding="gbk", index=False)
+        df_quick_test.to_csv("log/statistics/quick_test_result_2.csv", encoding="gbk", index=False)
     
     # 登出 baostock
     if Is_baostock_login:
