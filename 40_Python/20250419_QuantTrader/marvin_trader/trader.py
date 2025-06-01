@@ -13,20 +13,20 @@ from csv_data_proc import *
 trade_cost = 0.0004
 
 # 是否更新数据库
-# update_database = True
-update_database = False
+update_database = True
+# update_database = False
 
 # 更新数据库的时间范围
-update_database_from = "2025-5-10"
+update_database_from = "2010-1-1"
 update_database_to = "2025-5-30"
 
 # 是否显示股价图
-show_plot = True
-# show_plot = False
+# show_plot = True
+show_plot = False
 
 # 是否执行轮动策略
-rotation = True
-# rotation = False
+# rotation = True
+rotation = False
 
 # 是否每次重新下载股票数据
 # 更改K线频率后，需要重新下载数据
@@ -116,13 +116,18 @@ rotation_dates = [
 
 ##############################################################
 
+Is_baostock_login = False
+
 def baostock_get_data(symbol, start_date, end_date, csv_path=None):
 
     #### 登陆系统 ####
-    lg = bs.login()
-    # 显示登陆返回信息
-    print('login respond error_code:'+lg.error_code)
-    print('login respond error_msg:'+lg.error_msg)
+    global Is_baostock_login
+    if not Is_baostock_login:
+        lg = bs.login()
+        # 显示登陆返回信息
+        print('login respond error_code:'+lg.error_code)
+        print('login respond error_msg:'+lg.error_msg)
+        Is_baostock_login = True
 
     #### 获取历史K线数据 ####
     # 详细指标参数，参见“历史行情指标参数”章节
@@ -144,7 +149,7 @@ def baostock_get_data(symbol, start_date, end_date, csv_path=None):
     result = pd.DataFrame(data_list, columns=rs.fields)
 
     #### 登出系统 ####
-    bs.logout()
+    # bs.logout()  # 脚本整体结束时再登出
 
     # 数据类型转换：将str转为数值（暂只对常用指标转换，如需要可添加更多）
     result["Open"] = pd.to_numeric(result["open"])  # 为了适配yfinance脚本风格，首字母大写
@@ -506,4 +511,8 @@ if __name__ == "__main__":
         })
         df_quick_test.to_csv("quick_test_result_2.csv", encoding="gbk", index=False)
     
+    # 登出 baostock
+    if Is_baostock_login:
+        bs.logout()
+        Is_baostock_login = False
     
