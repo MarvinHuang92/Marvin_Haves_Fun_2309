@@ -142,7 +142,6 @@ def merge_rawdata(symbol, keep_origin_data=True):
     print("\nMerging data: %s" % symbol)
     print("- origin date range:      from %d to %d" % (start_date_org, end_date_org))
     print("- additional date range:  from %d to %d" % (start_date_new, end_date_new))
-    print("")
     # 两份数据的日期不连续，无法拼接
     if start_date_new > end_date_org + 1 or start_date_org > end_date_new + 1:
         print("ERROR: Unable to merge data, due to date range is not continuous.\n")
