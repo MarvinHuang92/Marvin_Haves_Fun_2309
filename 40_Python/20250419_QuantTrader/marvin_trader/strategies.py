@@ -22,12 +22,13 @@
 
 # 基类
 class Strategy():
-    def __init__(self, avg_near, avg_far):
-        self.AvgDays_Near = avg_near
-        self.AvgDays_Far = avg_far
+    def __init__(self):
+        self.name = "strategy_base_class"
         self.Rivise_Return = True
         self.trade_cost = 0
-        self.avg_period = 1
+        self.AvgDays_Near = 9
+        self.AvgDays_Far = 99
+        self.avg_period = 99
     
     def calcCommonInfo(self, data):
         # 计算相较昨日的涨跌幅（昨收->今收）
@@ -101,9 +102,11 @@ class Strategy():
 
 # 移动均线策略
 class StrategyMoveAvg(Strategy):
-    def __init__(self, avg_near=5, avg_far=30):
-        super().__init__(avg_near, avg_far)
+    def __init__(self):
+        super().__init__()
         self.name = "stategy_move_avg"
+        self.AvgDays_Near = 10
+        self.AvgDays_Far = 60
     
     # 计算仓位
     def calcPosition(self, data):
@@ -121,32 +124,32 @@ class StrategyMoveAvg(Strategy):
 
 # 昨日收益率二值化策略
 class StrategyYesterdayReturnBinarized(Strategy):
-    def __init__(self, avg_near=5, avg_far=30):
-        super().__init__(avg_near, avg_far)
+    def __init__(self):
+        super().__init__()
         self.name = "stategy_yestRetBin"
+        self.X_up = 0.015  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
     
     # 计算仓位
     def calcPosition(self, data):
-        X_up = 0.015  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
         data = self.calcCommonInfo(data)
         # 生成买卖信号
         # 昨天涨了，则今天开盘时全仓买入
         # 昨天跌了，今天空仓
-        data.loc[data['Daily_Return'] >= X_up, 'Signal'] = 1  # 以昨日涨幅为信号，涨幅超过止损线则满仓，否则空仓
+        data.loc[data['Daily_Return'] >= self.X_up, 'Signal'] = 1  # 以昨日涨幅为信号，涨幅超过止损线则满仓，否则空仓
         return data
 
 
 # 移动窗口高抛低吸策略
 class StrategyRollingMinMax(Strategy):
-    def __init__(self, avg_near=5, avg_far=30):
-        super().__init__(avg_near, avg_far)
+    def __init__(self):
+        super().__init__()
         self.name = "RollingMinMax"
         self.rolling_window = 300  # 统计过去N天的价格区间
+        self.Buy_ratio = 0.03  # 在最低价以上多少比例买入
+        self.Sell_ratio = 0.02  # 在最高价以下多少比例卖出
 
     # 计算仓位
     def calcPosition(self, data):
-        Buy_ratio = 0.03  # 在最低价以上多少比例买入
-        Sell_ratio = 0.02  # 在最高价以下多少比例卖出
         data = self.calcCommonInfo(data)
         
         # 添加移动最大值和最小值列
@@ -154,8 +157,8 @@ class StrategyRollingMinMax(Strategy):
         data['History_Min'] = data['Close'].rolling(window=self.rolling_window).min()
 
         # 生成买卖信号
-        # data.loc[(data['Close'] <= data['History_Min'] * (1 + Buy_ratio)), 'Signal'] = 1
-        # data.loc[(data['Close'] >= data['History_Max'] * (1 - Sell_ratio)), 'Signal'] = 0
+        # data.loc[(data['Close'] <= data['History_Min'] * (1 + self.Buy_ratio)), 'Signal'] = 1
+        # data.loc[(data['Close'] >= data['History_Max'] * (1 - self.Sell_ratio)), 'Signal'] = 0
 
         # 限制条件
         # 历史价格窗口未生成时，策略不生效，认为始终满仓，策略收益率=实际收益率
@@ -167,10 +170,10 @@ class StrategyRollingMinMax(Strategy):
             r_min = data.at[i, 'History_Min']
             r_max = data.at[i, 'History_Max']
             # 买入条件
-            if r_close <= r_min * (1 + Buy_ratio):
+            if r_close <= r_min * (1 + self.Buy_ratio):
                 data.at[i, 'Signal'] = 1
             # 卖出条件
-            elif r_close >= r_max * (1 - Sell_ratio):
+            elif r_close >= r_max * (1 - self.Sell_ratio):
                 data.at[i, 'Signal'] = 0
             # 不满足买卖两个条件的，将继承上一行的Signal值
             else:
@@ -181,16 +184,16 @@ class StrategyRollingMinMax(Strategy):
 
 # 自定义策略
 class StrategyCustomize(Strategy):
-    def __init__(self, avg_near=10, avg_far=30):
-        super().__init__(avg_near, avg_far)
-        self.name = "Customize"  # dummy
+    def __init__(self):
+        super().__init__()
+        self.name = "Customize"  # dummy，下面会改写
+        self.avg_period = 9  # 平均涨跌幅计算天数
+        self.R_up = 0.015  # 平均涨幅阈值
+        self.X_up = -0.03  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
+        self.R_down = -0.005  # 平均跌幅阈值
 
     # 计算仓位
     def calcPosition(self, data):
-        self.avg_period = 9  # 平均涨跌幅计算天数
-        R_up = 0.015  # 平均涨幅阈值
-        X_up = -0.03  # 当日止损线 （正值：稳健，负值：激进，设为-1表示没有止损）
-        R_down = -0.005  # 平均跌幅阈值
         data = self.calcCommonInfo(data)
         
         # 生成买卖信号
@@ -198,16 +201,16 @@ class StrategyCustomize(Strategy):
         # # 超跌反弹策略:
         # self.name = "OversoldRebound"
         # # 平均跌幅超过0.5%，且昨天为正收益，则买入，否则空仓
-        # data.loc[(data['Avg_Return'] < R_down) & (data['Daily_Return'] >= X_up), 'Signal'] = 1
+        # data.loc[(data['Avg_Return'] < self.R_down) & (data['Daily_Return'] >= self.X_up), 'Signal'] = 1
 
         # 连续上涨策略 * 移动均线：
         self.name = "ContinuousUptrend"
         # 平均涨幅超过R_up，且昨天为正收益，则买入，否则空仓
-        data.loc[(data['Avg_Return'] > R_up) & (data['Daily_Return'] >= X_up) & (data['MA_Near'] > data['MA_Far']), 'Signal'] = 1
+        data.loc[(data['Avg_Return'] > self.R_up) & (data['Daily_Return'] >= self.X_up) & (data['MA_Near'] > data['MA_Far']), 'Signal'] = 1
 
         # # 连续上涨-超跌反弹组合策略：
         # self.name = "ContinuousUptrendOrOversoldRebound"
-        # data.loc[((data['Avg_Return'] > R_up) | (data['Avg_Return'] < R_down)) & (data['Daily_Return'] >= X_up), 'Signal'] = 1
+        # data.loc[((data['Avg_Return'] > self.R_up) | (data['Avg_Return'] < self.R_down)) & (data['Daily_Return'] >= self.X_up), 'Signal'] = 1
 
         # 限制条件
         # 长期均线未生成时，策略不生效，认为始终满仓，策略收益率=实际收益率

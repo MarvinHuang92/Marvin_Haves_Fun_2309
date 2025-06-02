@@ -518,7 +518,7 @@ if __name__ == "__main__":
     if not rotation:
         ########## 选择交易策略 ##########
         # 移动平均线策略
-        # strategy = StrategyMoveAvg(avg_near=10, avg_far=60)
+        # strategy = StrategyMoveAvg()
         # 昨日收益率二值化策略
         # strategy = StrategyYesterdayReturnBinarized()
         # 移动窗口高抛低吸策略
@@ -571,6 +571,23 @@ if __name__ == "__main__":
         })
         write_to_csv(df_quick_test, ["log/statistics/%s_result_%s.csv" % (strategy.name, timestamp),
                                      "log/quick_test_result_2.csv"])
+    
+    # 记录 strategy 成员属性
+    # 生成包含所有成员属性的字典
+    strategy_attr_dict = strategy.__dict__
+    # 将字典转成 DataFrame
+    strategy_attr_df = pd.DataFrame.from_dict(strategy_attr_dict, orient="index", columns=["values"])
+    strategy_attr_df = strategy_attr_df.reset_index().rename(columns = {"index": "keys"})
+    # 打印到console
+    print("Strategy attributes:")
+    print(strategy_attr_df)
+    # 写入csv
+    if not rotation:
+        quick_test_attr_log_name = "log/quick_test_attributes_1.csv"
+    else:
+        quick_test_attr_log_name = "log/quick_test_attributes_2.csv"
+    write_to_csv(strategy_attr_df, ["log/statistics/%s_attributes_%s.csv" % (strategy.name, timestamp),
+                                     quick_test_attr_log_name])
     
     # 登出 baostock
     if Is_baostock_login:
