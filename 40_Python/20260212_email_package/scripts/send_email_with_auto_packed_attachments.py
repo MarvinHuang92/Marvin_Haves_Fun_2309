@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 
 # 使用python调用outlook发送邮件，参考: https://www.jianshu.com/p/4f0ed762f521
+# 使用python调用STMP发送邮件，参考: https://www.runoob.com/python/python-email.html
 
 import os
 import sys
 import win32com.client as win32
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 
 class MailInfo:
     def __init__(self, title, recipients, cc, html_msg, attachments=None):
@@ -66,7 +71,7 @@ def pack_attachments(attachment_dir, size_limit_mb):
     return packages_valid, packages_invalid
 
 
-def send_mail(mail_info, attachment_dir='.'):
+def send_mail_via_Outlook(mail_info, attachment_dir='.'):
     outlook = win32.Dispatch('Outlook.Application')
 
     mail = outlook.CreateItem(0) # 0: olMailItem
@@ -95,6 +100,54 @@ def send_mail(mail_info, attachment_dir='.'):
             mail.Attachments.Add(attachment_abs_path)
 
     mail.Send()
+
+def send_mail_via_SMTP(mail_info, attachment_dir='.'):
+    # QQ邮箱 IMAP/SMTP 设置方法
+    # 用户名/帐户： 你的QQ邮箱完整的地址
+    # 密码： 生成的授权码
+    # 电子邮件地址： 你的QQ邮箱的完整邮件地址
+    # 接收邮件服务器： imap.qq.com，使用SSL，端口号993
+    # 发送邮件服务器： smtp.qq.com，使用SSL，端口号465或587
+
+    # 发件人和收件人信息
+    mail_host = "smtp.qq.com"
+    sender_email = "marvinhuang@qq.com"
+    sender_password = "yovcwqbxjbyobfcb"  # POP3/IMAP/SMTP授权码，而不是密码
+
+    receiver_email = ''
+    for recipient in mail_info.recipients:
+        receiver_email += (recipient + ';')
+
+    # 创建邮件
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = receiver_email
+    message["Subject"] = mail_info.title
+
+    # 添加邮件正文
+    # message.attach(MIMEText("邮件正文", "plain"))  # 普通文字格式
+    message.attach(MIMEText(html_msg, 'html', 'utf-8'))  # HTML格式
+
+    # 添加附件
+    if mail_info.attachments:
+        for attachment_abs_path in mail_info.get_abs_attachment_paths(attachment_dir):
+            print('Attaching file: ' + attachment_abs_path)
+            with open(attachment_abs_path, "rb") as attachment:
+                part = MIMEApplication(attachment.read(), Name=attachment_abs_path)
+                part["Content-Disposition"] = 'attachment; filename="%s"' % attachment_abs_path
+                message.attach(part)
+
+    # 发送邮件
+    try:
+        # 连接到SMTP服务器
+        smtpObj = smtplib.SMTP_SSL(mail_host, 465)
+        # smtpObj.starttls()  # 有的邮箱不支持TLS，注释掉即可
+        smtpObj.login(sender_email, sender_password)
+        smtpObj.sendmail(sender_email, receiver_email, message.as_string())
+        smtpObj.quit()
+        print("邮件发送成功！")
+    except smtplib.SMTPException as e:
+        print(f"邮件发送失败: {e}")
 
 
 if __name__ == '__main__':
@@ -204,7 +257,8 @@ if __name__ == '__main__':
             print('TO: ' + str(recipients))
             print('CC: ' + str(cc))
             mail_info = MailInfo(mail_title, recipients, cc, html_msg, attachments)
-            send_mail(mail_info, attachment_dir)
+            # send_mail_via_Outlook(mail_info, attachment_dir)
+            send_mail_via_SMTP(mail_info, attachment_dir)
         else:
             print('Generating Email Message... [%d/%d]' % (i + 1, packages_valid_count))
             print("") # blank line
