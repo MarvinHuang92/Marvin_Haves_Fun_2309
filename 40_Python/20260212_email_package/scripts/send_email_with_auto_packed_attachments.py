@@ -117,6 +117,7 @@ def send_mail_via_SMTP(mail_info, attachment_dir='.'):
     receiver_email = ''
     for recipient in mail_info.recipients:
         receiver_email += (recipient + ';')
+    receiver_email = receiver_email.strip(";")
 
     # 创建邮件
     message = MIMEMultipart()
