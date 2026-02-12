@@ -1,8 +1,0 @@
-NOTE: Values recorded below; trailing ')' is not part of the value.
-===============================================
-C:/TCC/Tools/python3/3.7.4-29_WIN64_2/python.exe)
-marvinhuang@qq.com)
-./att)
-20)
-10)
-Y)
